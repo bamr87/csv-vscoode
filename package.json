@@ -1,0 +1,70 @@
+{
+  "name": "csv-grid-viewer",
+  "displayName": "CSV Grid Viewer",
+  "description": "Open CSV files in a grid view and sum selected numeric cells.",
+  "version": "0.0.1",
+  "publisher": "local-dev",
+  "license": "MIT",
+  "repository": {
+    "type": "git",
+    "url": "https://github.com/your-org-or-user/csv-grid-viewer.git"
+  },
+  "homepage": "https://github.com/your-org-or-user/csv-grid-viewer#readme",
+  "bugs": {
+    "url": "https://github.com/your-org-or-user/csv-grid-viewer/issues"
+  },
+  "keywords": [
+    "csv",
+    "grid",
+    "table",
+    "data",
+    "vscode-extension"
+  ],
+  "engines": {
+    "vscode": "^1.90.0"
+  },
+  "categories": [
+    "Other"
+  ],
+  "main": "./out/extension.js",
+  "contributes": {
+    "commands": [
+      {
+        "command": "csvGridViewer.openGrid",
+        "title": "CSV: Open Grid View",
+        "category": "CSV"
+      }
+    ],
+    "menus": {
+      "editor/title": [
+        {
+          "command": "csvGridViewer.openGrid",
+          "when": "resourceExtname =~ /\\.(csv|CSV)$/",
+          "group": "navigation"
+        }
+      ],
+      "explorer/context": [
+        {
+          "command": "csvGridViewer.openGrid",
+          "when": "resourceExtname =~ /\\.(csv|CSV)$/",
+          "group": "navigation"
+        }
+      ]
+    }
+  },
+  "scripts": {
+    "vscode:prepublish": "npm run compile",
+    "compile": "tsc -p ./",
+    "watch": "tsc -watch -p ./",
+    "publish:init": "node ./scripts/init-publish.mjs",
+    "package:vsix": "node ./scripts/package-vsix.mjs",
+    "publish:login": "npx @vscode/vsce login",
+    "publish:extension": "npx @vscode/vsce publish"
+  },
+  "devDependencies": {
+    "@vscode/vsce": "^3.7.0",
+    "@types/node": "^20.14.10",
+    "@types/vscode": "^1.90.0",
+    "typescript": "^5.5.4"
+  }
+}
