@@ -62,7 +62,7 @@
     "publish:extension": "npx @vscode/vsce publish"
   },
   "devDependencies": {
-    "@vscode/vsce": "^3.7.0",
+    "@vscode/vsce": "^3.9.2",
     "@types/node": "^20.14.10",
     "@types/vscode": "^1.90.0",
     "typescript": "^5.5.4"
