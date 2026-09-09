@@ -1,0 +1,15 @@
+{
+  "$schema": "../schemas/csvpipe.schema.json",
+  "name": "Export category summary on save",
+  "description": "Post-processing: whenever products.csv is saved, write a JSON summary per category.",
+  "applyTo": ["samples/products.csv"],
+  "trigger": "onSave",
+  "output": { "target": "file", "format": "json", "path": "samples/out/${name}-summary.json" },
+  "steps": [
+    {
+      "kind": "sql",
+      "query": "SELECT category, COUNT(*) AS products, SUM(price * COALESCE(qty, 0)) AS stock_value FROM csv GROUP BY category ORDER BY stock_value DESC"
+    },
+    { "kind": "scriptFile", "path": "samples/scripts/add-rank.js" }
+  ]
+}

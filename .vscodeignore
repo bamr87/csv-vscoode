@@ -1,11 +1,42 @@
-**/.vscode/**
-**/.vscode-test/**
+# Everything the packaged extension does not need at runtime.
+# Keep: package.json, README.md, CHANGELOG.md, LICENSE, media/icon.png,
+# schemas/ (contributed via jsonValidation) and out/.
+
+.vscode/**
+.vscode-test/**
+.github/**
 src/**
+webview/**
+test/**
 scripts/**
+samples/**
+tools/**
+docs/**
+node_modules/**
+.playwright-mcp/**
+
+# Build inputs and configuration
 tsconfig.json
-*.map
+webview/tsconfig.json
+esbuild.mjs
+eslint.config.mjs
+vitest.config.ts
+.editorconfig
 .gitignore
+package-lock.json
+
+# Source maps: the bundles ship minified without them
+out/**/*.map
+
+# Repository docs that are not the Marketplace listing
+CONTRIBUTING.md
 PUBLISHING.md
-*.CSV
-*.csv
-*.sql
+CLAUDE.md
+AGENTS.md
+
+# Media: the README references images by absolute URL, so only the icon ships
+media/icon.svg
+media/demo.gif
+media/screenshots/**
+
+*.vsix

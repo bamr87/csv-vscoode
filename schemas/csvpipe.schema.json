@@ -1,0 +1,645 @@
+{
+  "$schema": "http://json-schema.org/draft-07/schema#",
+  "title": "CSV Grid Editor pipeline",
+  "description": "A data-processing pipeline applied to CSV/TSV files by the CSV Grid Editor extension.",
+  "type": "object",
+  "required": [
+    "name",
+    "steps"
+  ],
+  "additionalProperties": false,
+  "properties": {
+    "$schema": {
+      "type": "string"
+    },
+    "name": {
+      "type": "string",
+      "description": "Display name of the pipeline."
+    },
+    "description": {
+      "type": "string"
+    },
+    "applyTo": {
+      "type": "array",
+      "description": "Workspace-relative glob patterns for the files this pipeline applies to (used by onOpen/onSave triggers and for suggestions).",
+      "items": {
+        "type": "string"
+      },
+      "examples": [
+        [
+          "data/*.csv"
+        ]
+      ]
+    },
+    "trigger": {
+      "type": "string",
+      "enum": [
+        "manual",
+        "onOpen",
+        "onSave"
+      ],
+      "default": "manual",
+      "description": "manual: run from the panel or command; onOpen: apply to the document when a matching file opens in the grid (pre-processing, undoable); onSave: run after a matching file is saved (post-processing, e.g. export)."
+    },
+    "output": {
+      "type": "object",
+      "additionalProperties": false,
+      "required": [
+        "target"
+      ],
+      "properties": {
+        "target": {
+          "type": "string",
+          "enum": [
+            "replace",
+            "newDocument",
+            "file",
+            "clipboard"
+          ],
+          "description": "replace: write the result back to the source document; newDocument: open an untitled editor; file: write to `path`; clipboard: copy."
+        },
+        "format": {
+          "type": "string",
+          "enum": [
+            "csv",
+            "tsv",
+            "semicolon",
+            "pipe",
+            "json",
+            "markdown",
+            "html",
+            "sql"
+          ],
+          "default": "csv"
+        },
+        "path": {
+          "type": "string",
+          "description": "Workspace-relative output path for target=file. Supports ${name}, ${ext}, ${dir}, ${pipeline}.",
+          "examples": [
+            "out/${name}.json",
+            "${dir}/${name}-clean.csv"
+          ]
+        }
+      }
+    },
+    "steps": {
+      "type": "array",
+      "items": {
+        "$ref": "#/definitions/step"
+      }
+    }
+  },
+  "definitions": {
+    "columns": {
+      "type": "array",
+      "items": {
+        "type": "string"
+      },
+      "description": "Column names. Leave empty for all columns."
+    },
+    "stepBase": {
+      "type": "object",
+      "properties": {
+        "label": {
+          "type": "string",
+          "description": "Optional label shown in logs and the panel."
+        },
+        "disabled": {
+          "type": "boolean"
+        }
+      }
+    },
+    "step": {
+      "oneOf": [
+        {
+          "title": "Filter rows (low-code)",
+          "allOf": [
+            {
+              "$ref": "#/definitions/stepBase"
+            }
+          ],
+          "type": "object",
+          "required": [
+            "kind",
+            "expression"
+          ],
+          "properties": {
+            "kind": {
+              "const": "filter"
+            },
+            "expression": {
+              "type": "string",
+              "description": "JavaScript expression evaluated per row; columns are variables (e.g. price > 5 && contains(name, 'widget'))."
+            }
+          }
+        },
+        {
+          "title": "Compute column (low-code)",
+          "allOf": [
+            {
+              "$ref": "#/definitions/stepBase"
+            }
+          ],
+          "type": "object",
+          "required": [
+            "kind",
+            "column",
+            "expression"
+          ],
+          "properties": {
+            "kind": {
+              "const": "compute"
+            },
+            "column": {
+              "type": "string",
+              "description": "Column to add or overwrite."
+            },
+            "expression": {
+              "type": "string",
+              "description": "JavaScript expression, e.g. round(price * qty, 2)."
+            }
+          }
+        },
+        {
+          "title": "Rename column",
+          "allOf": [
+            {
+              "$ref": "#/definitions/stepBase"
+            }
+          ],
+          "type": "object",
+          "required": [
+            "kind",
+            "from",
+            "to"
+          ],
+          "properties": {
+            "kind": {
+              "const": "rename"
+            },
+            "from": {
+              "type": "string"
+            },
+            "to": {
+              "type": "string"
+            }
+          }
+        },
+        {
+          "title": "Select columns",
+          "allOf": [
+            {
+              "$ref": "#/definitions/stepBase"
+            }
+          ],
+          "type": "object",
+          "required": [
+            "kind",
+            "columns"
+          ],
+          "properties": {
+            "kind": {
+              "const": "select"
+            },
+            "columns": {
+              "$ref": "#/definitions/columns"
+            }
+          }
+        },
+        {
+          "title": "Drop columns",
+          "allOf": [
+            {
+              "$ref": "#/definitions/stepBase"
+            }
+          ],
+          "type": "object",
+          "required": [
+            "kind",
+            "columns"
+          ],
+          "properties": {
+            "kind": {
+              "const": "drop"
+            },
+            "columns": {
+              "$ref": "#/definitions/columns"
+            }
+          }
+        },
+        {
+          "title": "Sort rows",
+          "allOf": [
+            {
+              "$ref": "#/definitions/stepBase"
+            }
+          ],
+          "type": "object",
+          "required": [
+            "kind",
+            "column"
+          ],
+          "properties": {
+            "kind": {
+              "const": "sort"
+            },
+            "column": {
+              "type": "string"
+            },
+            "direction": {
+              "type": "string",
+              "enum": [
+                "asc",
+                "desc"
+              ],
+              "default": "asc"
+            }
+          }
+        },
+        {
+          "title": "Remove duplicates",
+          "allOf": [
+            {
+              "$ref": "#/definitions/stepBase"
+            }
+          ],
+          "type": "object",
+          "required": [
+            "kind"
+          ],
+          "properties": {
+            "kind": {
+              "const": "dedupe"
+            },
+            "columns": {
+              "$ref": "#/definitions/columns"
+            }
+          }
+        },
+        {
+          "title": "Trim whitespace",
+          "allOf": [
+            {
+              "$ref": "#/definitions/stepBase"
+            }
+          ],
+          "type": "object",
+          "required": [
+            "kind"
+          ],
+          "properties": {
+            "kind": {
+              "const": "trim"
+            },
+            "columns": {
+              "$ref": "#/definitions/columns"
+            }
+          }
+        },
+        {
+          "title": "Change case",
+          "allOf": [
+            {
+              "$ref": "#/definitions/stepBase"
+            }
+          ],
+          "type": "object",
+          "required": [
+            "kind",
+            "case"
+          ],
+          "properties": {
+            "kind": {
+              "const": "changeCase"
+            },
+            "columns": {
+              "$ref": "#/definitions/columns"
+            },
+            "case": {
+              "type": "string",
+              "enum": [
+                "upper",
+                "lower",
+                "title"
+              ]
+            }
+          }
+        },
+        {
+          "title": "Find and replace",
+          "allOf": [
+            {
+              "$ref": "#/definitions/stepBase"
+            }
+          ],
+          "type": "object",
+          "required": [
+            "kind",
+            "find"
+          ],
+          "properties": {
+            "kind": {
+              "const": "replace"
+            },
+            "columns": {
+              "$ref": "#/definitions/columns"
+            },
+            "find": {
+              "type": "string"
+            },
+            "replacement": {
+              "type": "string",
+              "default": ""
+            },
+            "regex": {
+              "type": "boolean",
+              "default": false
+            },
+            "caseSensitive": {
+              "type": "boolean",
+              "default": false
+            }
+          }
+        },
+        {
+          "title": "Fill empty cells",
+          "allOf": [
+            {
+              "$ref": "#/definitions/stepBase"
+            }
+          ],
+          "type": "object",
+          "required": [
+            "kind",
+            "value"
+          ],
+          "properties": {
+            "kind": {
+              "const": "fillEmpty"
+            },
+            "columns": {
+              "$ref": "#/definitions/columns"
+            },
+            "value": {
+              "type": "string"
+            }
+          }
+        },
+        {
+          "title": "Limit rows",
+          "allOf": [
+            {
+              "$ref": "#/definitions/stepBase"
+            }
+          ],
+          "type": "object",
+          "required": [
+            "kind",
+            "count"
+          ],
+          "properties": {
+            "kind": {
+              "const": "limit"
+            },
+            "count": {
+              "type": "integer",
+              "minimum": 0
+            },
+            "offset": {
+              "type": "integer",
+              "minimum": 0,
+              "default": 0
+            }
+          }
+        },
+        {
+          "title": "Split column",
+          "allOf": [
+            {
+              "$ref": "#/definitions/stepBase"
+            }
+          ],
+          "type": "object",
+          "required": [
+            "kind",
+            "column",
+            "separator"
+          ],
+          "properties": {
+            "kind": {
+              "const": "splitColumn"
+            },
+            "column": {
+              "type": "string"
+            },
+            "separator": {
+              "type": "string"
+            },
+            "limit": {
+              "type": "integer",
+              "minimum": 0,
+              "default": 0
+            },
+            "regex": {
+              "type": "boolean",
+              "default": false
+            },
+            "removeSource": {
+              "type": "boolean",
+              "default": false
+            }
+          }
+        },
+        {
+          "title": "Merge columns",
+          "allOf": [
+            {
+              "$ref": "#/definitions/stepBase"
+            }
+          ],
+          "type": "object",
+          "required": [
+            "kind",
+            "columns",
+            "name"
+          ],
+          "properties": {
+            "kind": {
+              "const": "mergeColumns"
+            },
+            "columns": {
+              "$ref": "#/definitions/columns"
+            },
+            "separator": {
+              "type": "string",
+              "default": " "
+            },
+            "name": {
+              "type": "string"
+            },
+            "removeSources": {
+              "type": "boolean",
+              "default": false
+            }
+          }
+        },
+        {
+          "title": "Transpose",
+          "allOf": [
+            {
+              "$ref": "#/definitions/stepBase"
+            }
+          ],
+          "type": "object",
+          "required": [
+            "kind"
+          ],
+          "properties": {
+            "kind": {
+              "const": "transpose"
+            }
+          }
+        },
+        {
+          "title": "Remove empty rows",
+          "allOf": [
+            {
+              "$ref": "#/definitions/stepBase"
+            }
+          ],
+          "type": "object",
+          "required": [
+            "kind"
+          ],
+          "properties": {
+            "kind": {
+              "const": "removeEmptyRows"
+            }
+          }
+        },
+        {
+          "title": "Random sample",
+          "allOf": [
+            {
+              "$ref": "#/definitions/stepBase"
+            }
+          ],
+          "type": "object",
+          "required": [
+            "kind",
+            "count"
+          ],
+          "properties": {
+            "kind": {
+              "const": "sample"
+            },
+            "count": {
+              "type": "integer",
+              "minimum": 0
+            },
+            "seed": {
+              "type": "integer",
+              "default": 42
+            }
+          }
+        },
+        {
+          "title": "Inline JavaScript (code)",
+          "allOf": [
+            {
+              "$ref": "#/definitions/stepBase"
+            }
+          ],
+          "type": "object",
+          "required": [
+            "kind",
+            "code"
+          ],
+          "properties": {
+            "kind": {
+              "const": "script"
+            },
+            "code": {
+              "type": "string",
+              "description": "Function body with `columns`, `rows` (array of objects), `helpers` and `table` in scope. Return rows, { columns, rows }, or nothing to keep in-place mutations."
+            }
+          }
+        },
+        {
+          "title": "Script file (code)",
+          "allOf": [
+            {
+              "$ref": "#/definitions/stepBase"
+            }
+          ],
+          "type": "object",
+          "required": [
+            "kind",
+            "path"
+          ],
+          "properties": {
+            "kind": {
+              "const": "scriptFile"
+            },
+            "path": {
+              "type": "string",
+              "description": "Workspace-relative .js file exporting (table, helpers) => table."
+            }
+          }
+        },
+        {
+          "title": "SQL (code)",
+          "allOf": [
+            {
+              "$ref": "#/definitions/stepBase"
+            }
+          ],
+          "type": "object",
+          "required": [
+            "kind",
+            "query"
+          ],
+          "properties": {
+            "kind": {
+              "const": "sql"
+            },
+            "query": {
+              "type": "string",
+              "description": "SQLite query; the current data is available as table `csv`."
+            }
+          }
+        },
+        {
+          "title": "External command (code)",
+          "allOf": [
+            {
+              "$ref": "#/definitions/stepBase"
+            }
+          ],
+          "type": "object",
+          "required": [
+            "kind",
+            "command"
+          ],
+          "properties": {
+            "kind": {
+              "const": "command"
+            },
+            "command": {
+              "type": "string",
+              "description": "Shell command run from the workspace root. Receives the data on stdin, must print the result to stdout."
+            },
+            "format": {
+              "type": "string",
+              "enum": [
+                "csv",
+                "json"
+              ],
+              "default": "csv"
+            }
+          }
+        }
+      ]
+    }
+  }
+}

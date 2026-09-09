@@ -1,0 +1,28 @@
+<svg xmlns="http://www.w3.org/2000/svg" width="128" height="128" viewBox="0 0 128 128" role="img" aria-label="CSV Grid Editor">
+  <defs>
+    <linearGradient id="tile" x1="0" y1="0" x2="0.85" y2="1">
+      <stop offset="0" stop-color="#14424A"/>
+      <stop offset="1" stop-color="#0A2429"/>
+    </linearGradient>
+  </defs>
+  <rect x="0" y="0" width="128" height="128" rx="27" fill="url(#tile)"/>
+    <rect x="16.00" y="22.00" width="15.00" height="90.00" rx="3" fill="#2C4B50"/>
+  <rect x="33.50" y="22.00" width="24.50" height="22.00" rx="3" fill="#4FC3B2"/>
+  <path d="M47.10 31.80 L53.90 31.80 L50.50 35.80 Z" fill="#0C3238"/>
+  <rect x="60.50" y="22.00" width="24.50" height="22.00" rx="3" fill="#4FC3B2"/>
+  <path d="M74.10 31.80 L80.90 31.80 L77.50 35.80 Z" fill="#0C3238"/>
+  <rect x="87.50" y="22.00" width="24.50" height="22.00" rx="3" fill="#4FC3B2"/>
+  <path d="M101.10 31.80 L107.90 31.80 L104.50 35.80 Z" fill="#0C3238"/>
+  <rect x="20.00" y="54.98" width="7.00" height="3.20" rx="1.6" fill="#7FA8AC"/>
+  <rect x="20.00" y="77.65" width="7.00" height="3.20" rx="1.6" fill="#7FA8AC"/>
+  <rect x="20.00" y="100.32" width="7.00" height="3.20" rx="1.6" fill="#7FA8AC"/>
+  <rect x="33.50" y="46.50" width="24.50" height="20.17" rx="2.5" fill="#E4EDEB"/>
+  <rect x="60.50" y="46.50" width="24.50" height="20.17" rx="2.5" fill="#F0B45C"/>
+  <rect x="87.50" y="46.50" width="24.50" height="20.17" rx="2.5" fill="#E4EDEB"/>
+  <rect x="33.50" y="69.17" width="24.50" height="20.17" rx="2.5" fill="#E4EDEB"/>
+  <rect x="60.50" y="69.17" width="24.50" height="20.17" rx="2.5" fill="#F0B45C"/>
+  <rect x="87.50" y="69.17" width="24.50" height="20.17" rx="2.5" fill="#E4EDEB"/>
+  <rect x="33.50" y="91.83" width="24.50" height="20.17" rx="2.5" fill="#E4EDEB"/>
+  <rect x="60.50" y="91.83" width="24.50" height="20.17" rx="2.5" fill="#F0B45C"/>
+  <rect x="87.50" y="91.83" width="24.50" height="20.17" rx="2.5" fill="#E4EDEB"/>
+</svg>

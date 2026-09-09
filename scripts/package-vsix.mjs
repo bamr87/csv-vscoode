@@ -17,11 +17,13 @@ if (!existsSync(".vscodeignore")) {
 }
 
 try {
-  console.log("Compiling extension...");
-  execSync("npm run compile", { stdio: "inherit" });
+  console.log("Building extension...");
+  execSync("npm run build", { stdio: "inherit" });
 
+  // Dependencies are bundled by esbuild (sql.js is copied to out/sqljs), so
+  // node_modules must not be packaged.
   console.log("Running vsce package...");
-  execSync("npx @vscode/vsce package", { stdio: "inherit" });
+  execSync("npx @vscode/vsce package --no-dependencies", { stdio: "inherit" });
 
   console.log("VSIX package generated successfully.");
 } catch (error) {

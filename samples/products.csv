@@ -1,0 +1,10 @@
+id,sku,name,category,price,qty,in_stock,added
+1,WID-001,"Widget, small",Widgets,1.50,120,true,2024-01-05
+2,WID-002,"Widget, large",Widgets,3.75,40,true,2024-01-06
+3,GAD-100,Gadget,Gadgets,12.00,0,false,2024-02-11
+4,GAD-101,"Gadget ""Pro""",Gadgets,24.99,15,true,2024-02-12
+5,GIZ-500,Gizmo,Gizmos,7.25,8,true,2024-03-01
+6,GIZ-501,Gizmo XL,Gizmos,9.95,,false,2024-03-02
+7,ACC-001,Cable,Accessories,2.10,300,true,2024-03-15
+8,ACC-002,"Adapter
+(multi-line note)",Accessories,4.40,55,true,2024-03-16

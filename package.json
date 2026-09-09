@@ -1,70 +1,491 @@
 {
   "name": "csv-grid-viewer",
-  "displayName": "CSV Grid Viewer",
-  "description": "Open CSV files in a grid view and sum selected numeric cells.",
-  "version": "0.0.1",
-  "publisher": "local-dev",
+  "displayName": "CSV Grid Editor",
+  "description": "Spreadsheet-style grid for CSV and TSV files: edit, Excel-style filters, statistics, charts, SQL queries and repeatable data pipelines.",
+  "version": "1.0.0",
+  "publisher": "bash-365",
   "license": "MIT",
+  "icon": "media/icon.png",
+  "galleryBanner": {
+    "color": "#0A2429",
+    "theme": "dark"
+  },
+  "pricing": "Free",
+  "qna": "marketplace",
   "repository": {
     "type": "git",
-    "url": "https://github.com/your-org-or-user/csv-grid-viewer.git"
+    "url": "https://github.com/bamr87/csv-vscoode.git"
   },
-  "homepage": "https://github.com/your-org-or-user/csv-grid-viewer#readme",
+  "homepage": "https://github.com/bamr87/csv-vscoode#readme",
   "bugs": {
-    "url": "https://github.com/your-org-or-user/csv-grid-viewer/issues"
+    "url": "https://github.com/bamr87/csv-vscoode/issues"
   },
   "keywords": [
     "csv",
+    "tsv",
     "grid",
     "table",
+    "spreadsheet",
+    "excel",
+    "sql",
     "data",
-    "vscode-extension"
+    "filter",
+    "pipeline",
+    "delimited",
+    "data science"
   ],
   "engines": {
     "vscode": "^1.90.0"
   },
   "categories": [
+    "Data Science",
+    "Visualization",
+    "Formatters",
     "Other"
+  ],
+  "extensionKind": [
+    "workspace"
+  ],
+  "capabilities": {
+    "untrustedWorkspaces": {
+      "supported": "limited",
+      "description": "Pipeline steps that evaluate expressions, scripts, SQL or external commands are disabled in untrusted workspaces. Viewing and no-code editing are unaffected."
+    },
+    "virtualWorkspaces": {
+      "supported": "limited",
+      "description": "Pipeline steps that run script files or external commands require a file system on disk."
+    }
+  },
+  "activationEvents": [
+    "onLanguage:csv",
+    "onLanguage:tsv",
+    "workspaceContains:**/*.csvpipe.json"
   ],
   "main": "./out/extension.js",
   "contributes": {
+    "languages": [
+      {
+        "id": "csv",
+        "aliases": [
+          "CSV",
+          "csv"
+        ],
+        "extensions": [
+          ".csv",
+          ".psv"
+        ]
+      },
+      {
+        "id": "tsv",
+        "aliases": [
+          "TSV",
+          "tsv"
+        ],
+        "extensions": [
+          ".tsv",
+          ".tab"
+        ]
+      }
+    ],
+    "customEditors": [
+      {
+        "viewType": "csv.gridEditor",
+        "displayName": "CSV Grid Editor",
+        "selector": [
+          {
+            "filenamePattern": "*.csv"
+          },
+          {
+            "filenamePattern": "*.tsv"
+          },
+          {
+            "filenamePattern": "*.tab"
+          },
+          {
+            "filenamePattern": "*.psv"
+          }
+        ],
+        "priority": "default"
+      }
+    ],
     "commands": [
       {
-        "command": "csvGridViewer.openGrid",
-        "title": "CSV: Open Grid View",
+        "command": "csv.openGrid",
+        "title": "Open in Grid Editor",
+        "category": "CSV",
+        "icon": "$(table)"
+      },
+      {
+        "command": "csv.openAsText",
+        "title": "Open as Text",
+        "category": "CSV",
+        "icon": "$(file-code)"
+      },
+      {
+        "command": "csv.find",
+        "title": "Find and Replace in Grid",
+        "category": "CSV"
+      },
+      {
+        "command": "csv.columnStats",
+        "title": "Column Statistics",
+        "category": "CSV"
+      },
+      {
+        "command": "csv.chart",
+        "title": "Chart a Column",
+        "category": "CSV"
+      },
+      {
+        "command": "csv.runSql",
+        "title": "Run SQL Query",
+        "category": "CSV"
+      },
+      {
+        "command": "csv.export",
+        "title": "Export As…",
+        "category": "CSV"
+      },
+      {
+        "command": "csv.toggleHeaderRow",
+        "title": "Toggle Header Row",
+        "category": "CSV"
+      },
+      {
+        "command": "csv.setDelimiter",
+        "title": "Set Delimiter",
+        "category": "CSV"
+      },
+      {
+        "command": "csv.showActions",
+        "title": "Show Actions",
+        "category": "CSV"
+      },
+      {
+        "command": "csv.runPipeline",
+        "title": "Run Pipeline…",
+        "category": "CSV",
+        "icon": "$(run-all)"
+      },
+      {
+        "command": "csv.openPipelinePanel",
+        "title": "Open Pipeline Builder",
+        "category": "CSV"
+      },
+      {
+        "command": "csv.newPipeline",
+        "title": "New Pipeline",
+        "category": "CSV"
+      },
+      {
+        "command": "csv.newPipelineScript",
+        "title": "New Pipeline Script",
+        "category": "CSV"
+      },
+      {
+        "command": "csv.showPipelineLog",
+        "title": "Show Pipeline Log",
         "category": "CSV"
       }
     ],
     "menus": {
+      "commandPalette": [
+        {
+          "command": "csv.openGrid",
+          "when": "resourceExtname =~ /\\.(csv|tsv|tab|psv)$/i || editorLangId == csv || editorLangId == tsv"
+        },
+        {
+          "command": "csv.openAsText",
+          "when": "activeCustomEditorId == csv.gridEditor"
+        },
+        {
+          "command": "csv.find",
+          "when": "activeCustomEditorId == csv.gridEditor || editorLangId == csv || editorLangId == tsv"
+        },
+        {
+          "command": "csv.columnStats",
+          "when": "activeCustomEditorId == csv.gridEditor || editorLangId == csv || editorLangId == tsv"
+        },
+        {
+          "command": "csv.chart",
+          "when": "activeCustomEditorId == csv.gridEditor || editorLangId == csv || editorLangId == tsv"
+        },
+        {
+          "command": "csv.runSql",
+          "when": "activeCustomEditorId == csv.gridEditor || editorLangId == csv || editorLangId == tsv"
+        },
+        {
+          "command": "csv.export",
+          "when": "activeCustomEditorId == csv.gridEditor || editorLangId == csv || editorLangId == tsv"
+        },
+        {
+          "command": "csv.toggleHeaderRow",
+          "when": "activeCustomEditorId == csv.gridEditor || editorLangId == csv || editorLangId == tsv"
+        },
+        {
+          "command": "csv.setDelimiter",
+          "when": "activeCustomEditorId == csv.gridEditor || editorLangId == csv || editorLangId == tsv"
+        },
+        {
+          "command": "csv.showActions",
+          "when": "activeCustomEditorId == csv.gridEditor || editorLangId == csv || editorLangId == tsv"
+        },
+        {
+          "command": "csv.runPipeline",
+          "when": "activeCustomEditorId == csv.gridEditor || editorLangId == csv || editorLangId == tsv"
+        },
+        {
+          "command": "csv.openPipelinePanel",
+          "when": "activeCustomEditorId == csv.gridEditor || editorLangId == csv || editorLangId == tsv"
+        }
+      ],
       "editor/title": [
         {
-          "command": "csvGridViewer.openGrid",
-          "when": "resourceExtname =~ /\\.(csv|CSV)$/",
+          "command": "csv.openGrid",
+          "when": "(resourceExtname =~ /\\.(csv|tsv|tab|psv)$/i || editorLangId == csv || editorLangId == tsv) && activeCustomEditorId != csv.gridEditor",
+          "group": "navigation"
+        },
+        {
+          "command": "csv.openAsText",
+          "when": "activeCustomEditorId == csv.gridEditor",
+          "group": "navigation"
+        },
+        {
+          "command": "csv.runPipeline",
+          "when": "resourceFilename =~ /\\.csvpipe\\.json$/",
           "group": "navigation"
         }
       ],
       "explorer/context": [
         {
-          "command": "csvGridViewer.openGrid",
-          "when": "resourceExtname =~ /\\.(csv|CSV)$/",
+          "command": "csv.openGrid",
+          "when": "resourceExtname =~ /\\.(csv|tsv|tab|psv)$/i",
+          "group": "navigation"
+        },
+        {
+          "command": "csv.export",
+          "when": "resourceExtname =~ /\\.(csv|tsv|tab|psv)$/i",
+          "group": "7_modification"
+        },
+        {
+          "command": "csv.runPipeline",
+          "when": "resourceFilename =~ /\\.csvpipe\\.json$/",
           "group": "navigation"
         }
       ]
-    }
+    },
+    "keybindings": [
+      {
+        "command": "csv.find",
+        "key": "ctrl+f",
+        "mac": "cmd+f",
+        "when": "activeCustomEditorId == csv.gridEditor && !findWidgetVisible"
+      }
+    ],
+    "configuration": {
+      "title": "CSV Grid Editor",
+      "properties": {
+        "csv.hasHeaderRow": {
+          "type": "boolean",
+          "default": true,
+          "description": "Treat the first row as column headers. Can be overridden per file from the grid toolbar."
+        },
+        "csv.delimiter": {
+          "type": "string",
+          "default": "auto",
+          "enum": [
+            "auto",
+            ",",
+            "\t",
+            ";",
+            "|"
+          ],
+          "enumDescriptions": [
+            "Detect from the file contents (and extension)",
+            "Comma",
+            "Tab",
+            "Semicolon",
+            "Pipe"
+          ],
+          "description": "Field delimiter. Can be overridden per file from the grid toolbar."
+        },
+        "csv.maxRows": {
+          "type": "number",
+          "default": 100000,
+          "minimum": 100,
+          "description": "Maximum number of rows rendered in the grid. Larger files are still fully editable and queryable, but only the first N rows are shown."
+        },
+        "csv.sqlResultLimit": {
+          "type": "number",
+          "default": 5000,
+          "minimum": 1,
+          "description": "Maximum number of rows returned to the SQL results panel."
+        },
+        "csv.rainbowColumns": {
+          "type": "boolean",
+          "default": true,
+          "description": "Colour each column differently when a CSV/TSV file is opened as text."
+        },
+        "csv.rainbowMaxLines": {
+          "type": "number",
+          "default": 20000,
+          "description": "Only colour the first N lines of a text-mode CSV, to keep large files responsive."
+        },
+        "csv.pipelines.folder": {
+          "type": "string",
+          "default": ".vscode/csv-pipelines",
+          "description": "Default folder for pipelines saved from the pipeline builder. Any *.csvpipe.json file in the workspace is discovered regardless."
+        },
+        "csv.pipelines.allowScripts": {
+          "type": "boolean",
+          "default": true,
+          "description": "Allow pipeline steps that evaluate code (expressions, JavaScript, SQL, external commands). These never run in untrusted workspaces."
+        },
+        "csv.pipelines.timeoutMs": {
+          "type": "number",
+          "default": 10000,
+          "minimum": 100,
+          "description": "Time limit for expression and script steps (commands get six times this)."
+        },
+        "csv.pipelines.previewRows": {
+          "type": "number",
+          "default": 1000,
+          "minimum": 10,
+          "description": "Rows shown in the pipeline preview grid."
+        },
+        "csv.lintFieldCount": {
+          "type": "boolean",
+          "default": true,
+          "description": "In text mode, warn about rows whose field count differs from the header row."
+        }
+      }
+    },
+    "semanticTokenTypes": [
+      {
+        "id": "csvColumn0",
+        "description": "CSV column 1, 11, 21…"
+      },
+      {
+        "id": "csvColumn1",
+        "description": "CSV column 2, 12, 22…"
+      },
+      {
+        "id": "csvColumn2",
+        "description": "CSV column 3, 13, 23…"
+      },
+      {
+        "id": "csvColumn3",
+        "description": "CSV column 4, 14, 24…"
+      },
+      {
+        "id": "csvColumn4",
+        "description": "CSV column 5, 15, 25…"
+      },
+      {
+        "id": "csvColumn5",
+        "description": "CSV column 6, 16, 26…"
+      },
+      {
+        "id": "csvColumn6",
+        "description": "CSV column 7, 17, 27…"
+      },
+      {
+        "id": "csvColumn7",
+        "description": "CSV column 8, 18, 28…"
+      },
+      {
+        "id": "csvColumn8",
+        "description": "CSV column 9, 19, 29…"
+      },
+      {
+        "id": "csvColumn9",
+        "description": "CSV column 10, 20, 30…"
+      }
+    ],
+    "semanticTokenScopes": [
+      {
+        "scopes": {
+          "csvColumn0": [
+            "entity.name.function"
+          ],
+          "csvColumn1": [
+            "string"
+          ],
+          "csvColumn2": [
+            "keyword.control"
+          ],
+          "csvColumn3": [
+            "constant.numeric"
+          ],
+          "csvColumn4": [
+            "entity.name.type"
+          ],
+          "csvColumn5": [
+            "variable.parameter"
+          ],
+          "csvColumn6": [
+            "comment"
+          ],
+          "csvColumn7": [
+            "support.class"
+          ],
+          "csvColumn8": [
+            "string.regexp"
+          ],
+          "csvColumn9": [
+            "entity.name.tag"
+          ]
+        }
+      }
+    ],
+    "configurationDefaults": {
+      "[csv]": {
+        "editor.semanticHighlighting.enabled": true
+      },
+      "[tsv]": {
+        "editor.semanticHighlighting.enabled": true,
+        "editor.insertSpaces": false
+      }
+    },
+    "jsonValidation": [
+      {
+        "fileMatch": "*.csvpipe.json",
+        "url": "./schemas/csvpipe.schema.json"
+      }
+    ]
   },
   "scripts": {
-    "vscode:prepublish": "npm run compile",
-    "compile": "tsc -p ./",
-    "watch": "tsc -watch -p ./",
+    "vscode:prepublish": "npm run build",
+    "build": "npm run typecheck && node esbuild.mjs --production",
+    "compile": "node esbuild.mjs",
+    "watch": "node esbuild.mjs --watch",
+    "typecheck": "tsc -p ./ --noEmit && tsc -p webview --noEmit",
+    "lint": "eslint .",
+    "test": "vitest run",
+    "test:watch": "vitest",
     "publish:init": "node ./scripts/init-publish.mjs",
     "package:vsix": "node ./scripts/package-vsix.mjs",
     "publish:login": "npx @vscode/vsce login",
-    "publish:extension": "npx @vscode/vsce publish"
+    "publish:extension": "npx @vscode/vsce publish --no-dependencies"
+  },
+  "dependencies": {
+    "chart.js": "^4.5.1",
+    "papaparse": "^5.7.0",
+    "sql.js": "^1.14.2",
+    "tabulator-tables": "^6.5.2"
   },
   "devDependencies": {
-    "@vscode/vsce": "^3.7.0",
-    "@types/node": "^20.14.10",
+    "@eslint/js": "^10.0.1",
+    "@types/node": "^20.19.43",
+    "@types/papaparse": "^5.5.2",
+    "@types/sql.js": "^1.4.11",
+    "@types/tabulator-tables": "^6.3.6",
     "@types/vscode": "^1.90.0",
-    "typescript": "^5.5.4"
+    "@vscode/vsce": "^3.9.2",
+    "esbuild": "^0.28.2",
+    "eslint": "^10.10.0",
+    "typescript": "^5.9.3",
+    "typescript-eslint": "^8.70.0",
+    "vitest": "^4.1.11"
   }
 }
