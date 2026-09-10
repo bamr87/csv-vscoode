@@ -7,6 +7,10 @@ import { registerStatusBar } from "./statusBar";
 import { CsvDocumentModel } from "./documentModel";
 import type { PanelId } from "./core/messages";
 import { PipelineService } from "./pipelines";
+import { FilesViewProvider } from "./views/filesView";
+import { PipelinesViewProvider } from "./views/pipelinesView";
+import { SettingsViewProvider } from "./views/settingsView";
+import type { SettingScope } from "./views/settingsModel";
 
 export function activate(context: vscode.ExtensionContext): void {
   const pipelines = new PipelineService(context);
@@ -22,6 +26,7 @@ export function activate(context: vscode.ExtensionContext): void {
     vscode.languages.registerHoverProvider(CSV_SELECTOR, new CsvHoverProvider())
   );
   registerFieldCountLinter(context);
+  const views = registerSidebar(context, pipelines);
 
   /** Resolve the CSV the user means: explicit URI, active grid, or active text editor. */
   const resolveUri = (uri?: vscode.Uri): vscode.Uri | undefined => {
@@ -64,6 +69,18 @@ export function activate(context: vscode.ExtensionContext): void {
   };
 
   register("csv.openGrid", (uri?: unknown) => openGrid(uri instanceof vscode.Uri ? uri : undefined));
+
+  // Internal: re-read a document after its per-file overrides changed.
+  register("csv.reloadDocument", (uri?: unknown) => {
+    if (!(uri instanceof vscode.Uri)) {
+      return;
+    }
+    const session = provider.sessionFor(uri);
+    if (session) {
+      session.model.invalidate();
+      session.sendTable();
+    }
+  });
 
   register("csv.openAsText", async (uri?: unknown) => {
     const target = resolveUri(uri instanceof vscode.Uri ? uri : undefined);
@@ -192,6 +209,7 @@ export function activate(context: vscode.ExtensionContext): void {
     try {
       const uri = await pipelines.createFromTemplate(name, current ? vscode.workspace.asRelativePath(current, false) : undefined);
       if (uri) {
+        views.pipelines.refresh();
         await vscode.window.showTextDocument(uri);
       }
     } catch (error) {
@@ -230,6 +248,111 @@ export function activate(context: vscode.ExtensionContext): void {
       await vscode.commands.executeCommand(pick.command);
     }
   });
+}
+
+interface SidebarViews {
+  settings: SettingsViewProvider;
+  pipelines: PipelinesViewProvider;
+  files: FilesViewProvider;
+  refreshAll(): void;
+}
+
+/**
+ * The CSV container in the activity bar: settings, pipelines and the
+ * workspace's delimited files.
+ */
+function registerSidebar(context: vscode.ExtensionContext, pipelineService: PipelineService): SidebarViews {
+  const settings = new SettingsViewProvider(context);
+  const pipelines = new PipelinesViewProvider(pipelineService);
+  const files = new FilesViewProvider();
+
+  const settingsTree = vscode.window.createTreeView("csv.settingsView", { treeDataProvider: settings, showCollapseAll: true });
+  const pipelinesTree = vscode.window.createTreeView("csv.pipelinesView", { treeDataProvider: pipelines });
+  const filesTree = vscode.window.createTreeView("csv.filesView", { treeDataProvider: files });
+  context.subscriptions.push(settingsTree, pipelinesTree, filesTree);
+
+  const syncScopeLabel = (): void => {
+    settingsTree.description = settings.scope === "user" ? "User" : "Workspace";
+  };
+  syncScopeLabel();
+
+  const refreshAll = (): void => {
+    settings.refresh();
+    pipelines.refresh();
+    files.refresh();
+  };
+
+  // Keep the views honest as the workspace changes underneath them.
+  context.subscriptions.push(
+    vscode.workspace.onDidChangeConfiguration((e) => {
+      if (e.affectsConfiguration("csv")) {
+        settings.refresh();
+      }
+    }),
+    vscode.window.onDidChangeActiveTextEditor(() => {
+      settings.refresh();
+      pipelines.refresh();
+    }),
+    vscode.workspace.onDidSaveTextDocument((document) => {
+      if (document.uri.path.endsWith(".csvpipe.json")) {
+        pipelines.refresh();
+      }
+    })
+  );
+
+  const watcher = vscode.workspace.createFileSystemWatcher("**/*.{csv,tsv,tab,psv,csvpipe.json}");
+  const onFileChange = (): void => {
+    files.refresh();
+    pipelines.refresh();
+  };
+  watcher.onDidCreate(onFileChange);
+  watcher.onDidDelete(onFileChange);
+  context.subscriptions.push(watcher);
+
+  const register = (command: string, callback: (...args: never[]) => unknown): void => {
+    context.subscriptions.push(vscode.commands.registerCommand(command, callback as (...args: unknown[]) => unknown));
+  };
+
+  register("csv.views.refresh", () => refreshAll());
+
+  register("csv.settings.edit", (key: string) => settings.edit(key));
+  register("csv.settings.reset", (node: { def?: { key: string } }) => (node?.def ? settings.reset(node.def.key) : undefined));
+  register("csv.settings.resetAll", () => settings.resetAll());
+  register("csv.settings.openNative", () => vscode.commands.executeCommand("workbench.action.openSettings", "@ext:bash-365.csv-grid-viewer"));
+  register("csv.settings.selectScope", async () => {
+    const picked = await vscode.window.showQuickPick(
+      [
+        { label: "Workspace", description: "applies to this project only", value: "workspace" as SettingScope },
+        { label: "User", description: "applies everywhere", value: "user" as SettingScope }
+      ],
+      { placeHolder: "Which settings does the sidebar edit?" }
+    );
+    if (picked) {
+      await settings.setScope(picked.value);
+      syncScopeLabel();
+    }
+  });
+  register("csv.settings.editFileOverride", (which: "header" | "delimiter", uri: vscode.Uri) => settings.editFileOverride(which, uri));
+  register("csv.settings.clearFileOverride", (node: { uri?: vscode.Uri }) => (node?.uri ? settings.clearFileOverrides(node.uri) : undefined));
+
+  register("csv.pipelines.run", (node: unknown) => {
+    const path = pipelines.pathOf(node as Parameters<typeof pipelines.pathOf>[0]);
+    return vscode.commands.executeCommand("csv.runPipeline", path ? pipelineService.resolveWorkspacePath(path) : undefined);
+  });
+  register("csv.pipelines.edit", async (node: unknown) => {
+    const path = pipelines.pathOf(node as Parameters<typeof pipelines.pathOf>[0]);
+    if (path) {
+      await vscode.window.showTextDocument(pipelineService.resolveWorkspacePath(path));
+    }
+  });
+
+  register("csv.files.openAsText", async (node: { uri?: vscode.Uri }) => {
+    if (node?.uri) {
+      await vscode.commands.executeCommand("vscode.openWith", node.uri, "default");
+    }
+  });
+
+  return { settings, pipelines, files, refreshAll };
 }
 
 export function deactivate(): void {

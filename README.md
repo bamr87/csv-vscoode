@@ -94,6 +94,12 @@ Full reference: [docs/pipelines.md](docs/pipelines.md).
 
 The whole file or just the selection, to JSON, Markdown, HTML, SQL inserts, or a different delimiter. Selections can go straight to the clipboard.
 
+### A sidebar for settings, pipelines and files
+
+The CSV icon in the activity bar opens three views. **Settings** lists every option the extension contributes, grouped, showing its current value; click one to change it, with a toggle for booleans, a picker for choices and a validated prompt for numbers. It also surfaces the per-file header and delimiter overrides for the file you are looking at, which are otherwise invisible once set from the grid toolbar. **Pipelines** lists the workspace's pipelines with the ones matching the current file first, and runs or edits them in one click. **Files** lists every delimited file in the workspace and opens it in the grid.
+
+A control in the Settings view title chooses whether edits go to User or Workspace settings, and the current scope is shown next to the view name.
+
 ### Text mode
 
 Open any CSV as text and each column gets its own colour, hovering a cell names its column, the status bar tracks the column under the cursor, and rows with the wrong field count are reported in the Problems panel.

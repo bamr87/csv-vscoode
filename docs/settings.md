@@ -2,6 +2,19 @@
 
 All settings live under the `csv.` prefix and can be set globally, per workspace, or per language with a `[csv]` block.
 
+## The Settings view
+
+The quickest way to change any of them is the CSV icon in the activity bar. Its **Settings** view groups every option under Parsing, Grid, Text mode and Pipelines, and shows each one's current value beside its name.
+
+- Click a setting to change it. Booleans toggle immediately; choices open a picker; numbers open a prompt that validates the range.
+- A setting explicitly set in the current scope gets a discard action to reset it to the default. **Reset All Settings** in the view menu clears every one at once.
+- The control in the view title chooses whether edits go to **User** or **Workspace** settings. The active scope is shown next to the view name, and defaults to Workspace when a folder is open.
+- **Open in Settings Editor** opens VS Code's own settings UI filtered to this extension.
+
+### File overrides
+
+When a delimited file is active, the view gains a **This file** group at the top showing its header-row and delimiter overrides. These are the per-file choices made from the grid toolbar, and they take precedence over everything below. Each can be changed or returned to following the settings, and the group has an action to clear both at once.
+
 ## Parsing
 
 ### `csv.hasHeaderRow`

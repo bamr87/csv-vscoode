@@ -59,7 +59,10 @@
   "activationEvents": [
     "onLanguage:csv",
     "onLanguage:tsv",
-    "workspaceContains:**/*.csvpipe.json"
+    "workspaceContains:**/*.csvpipe.json",
+    "onView:csv.settingsView",
+    "onView:csv.pipelinesView",
+    "onView:csv.filesView"
   ],
   "main": "./out/extension.js",
   "contributes": {
@@ -186,6 +189,76 @@
         "command": "csv.showPipelineLog",
         "title": "Show Pipeline Log",
         "category": "CSV"
+      },
+      {
+        "command": "csv.views.refresh",
+        "title": "Refresh",
+        "category": "CSV",
+        "icon": "$(refresh)"
+      },
+      {
+        "command": "csv.settings.edit",
+        "title": "Edit Setting",
+        "category": "CSV",
+        "icon": "$(edit)"
+      },
+      {
+        "command": "csv.settings.reset",
+        "title": "Reset to Default",
+        "category": "CSV",
+        "icon": "$(discard)"
+      },
+      {
+        "command": "csv.settings.resetAll",
+        "title": "Reset All Settings",
+        "category": "CSV",
+        "icon": "$(clear-all)"
+      },
+      {
+        "command": "csv.settings.openNative",
+        "title": "Open in Settings Editor",
+        "category": "CSV",
+        "icon": "$(gear)"
+      },
+      {
+        "command": "csv.settings.selectScope",
+        "title": "Change Settings Scope",
+        "category": "CSV",
+        "icon": "$(root-folder)"
+      },
+      {
+        "command": "csv.settings.editFileOverride",
+        "title": "Edit File Override",
+        "category": "CSV"
+      },
+      {
+        "command": "csv.settings.clearFileOverride",
+        "title": "Clear File Overrides",
+        "category": "CSV",
+        "icon": "$(discard)"
+      },
+      {
+        "command": "csv.pipelines.run",
+        "title": "Run Pipeline",
+        "category": "CSV",
+        "icon": "$(play)"
+      },
+      {
+        "command": "csv.pipelines.edit",
+        "title": "Edit Pipeline File",
+        "category": "CSV",
+        "icon": "$(go-to-file)"
+      },
+      {
+        "command": "csv.files.openAsText",
+        "title": "Open as Text",
+        "category": "CSV",
+        "icon": "$(file-code)"
+      },
+      {
+        "command": "csv.reloadDocument",
+        "title": "Reload Document",
+        "category": "CSV"
       }
     ],
     "menus": {
@@ -237,6 +310,42 @@
         {
           "command": "csv.openPipelinePanel",
           "when": "activeCustomEditorId == csv.gridEditor || editorLangId == csv || editorLangId == tsv"
+        },
+        {
+          "command": "csv.settings.edit",
+          "when": "false"
+        },
+        {
+          "command": "csv.settings.reset",
+          "when": "false"
+        },
+        {
+          "command": "csv.settings.editFileOverride",
+          "when": "false"
+        },
+        {
+          "command": "csv.settings.clearFileOverride",
+          "when": "false"
+        },
+        {
+          "command": "csv.pipelines.run",
+          "when": "false"
+        },
+        {
+          "command": "csv.pipelines.edit",
+          "when": "false"
+        },
+        {
+          "command": "csv.files.openAsText",
+          "when": "false"
+        },
+        {
+          "command": "csv.reloadDocument",
+          "when": "false"
+        },
+        {
+          "command": "csv.views.refresh",
+          "when": "false"
         }
       ],
       "editor/title": [
@@ -271,6 +380,75 @@
           "command": "csv.runPipeline",
           "when": "resourceFilename =~ /\\.csvpipe\\.json$/",
           "group": "navigation"
+        }
+      ],
+      "view/title": [
+        {
+          "command": "csv.settings.selectScope",
+          "when": "view == csv.settingsView",
+          "group": "navigation@1"
+        },
+        {
+          "command": "csv.settings.openNative",
+          "when": "view == csv.settingsView",
+          "group": "navigation@2"
+        },
+        {
+          "command": "csv.settings.resetAll",
+          "when": "view == csv.settingsView",
+          "group": "1_reset"
+        },
+        {
+          "command": "csv.newPipeline",
+          "when": "view == csv.pipelinesView",
+          "group": "navigation@1"
+        },
+        {
+          "command": "csv.views.refresh",
+          "when": "view == csv.pipelinesView",
+          "group": "navigation@2"
+        },
+        {
+          "command": "csv.views.refresh",
+          "when": "view == csv.filesView",
+          "group": "navigation@1"
+        }
+      ],
+      "view/item/context": [
+        {
+          "command": "csv.settings.edit",
+          "when": "view == csv.settingsView && viewItem =~ /^csvSetting/",
+          "group": "inline@1"
+        },
+        {
+          "command": "csv.settings.reset",
+          "when": "view == csv.settingsView && viewItem == csvSettingOverridden",
+          "group": "inline@2"
+        },
+        {
+          "command": "csv.settings.clearFileOverride",
+          "when": "view == csv.settingsView && viewItem == csvFileOverrideGroup",
+          "group": "inline@1"
+        },
+        {
+          "command": "csv.pipelines.run",
+          "when": "view == csv.pipelinesView && viewItem == csvPipeline",
+          "group": "inline@1"
+        },
+        {
+          "command": "csv.pipelines.edit",
+          "when": "view == csv.pipelinesView && viewItem == csvPipeline",
+          "group": "inline@2"
+        },
+        {
+          "command": "csv.openGrid",
+          "when": "view == csv.filesView && viewItem == csvFile",
+          "group": "inline@1"
+        },
+        {
+          "command": "csv.files.openAsText",
+          "when": "view == csv.filesView && viewItem == csvFile",
+          "group": "inline@2"
         }
       ]
     },
@@ -451,6 +629,50 @@
       {
         "fileMatch": "*.csvpipe.json",
         "url": "./schemas/csvpipe.schema.json"
+      }
+    ],
+    "viewsContainers": {
+      "activitybar": [
+        {
+          "id": "csv",
+          "title": "CSV",
+          "icon": "media/sidebar-icon.svg"
+        }
+      ]
+    },
+    "views": {
+      "csv": [
+        {
+          "id": "csv.settingsView",
+          "name": "Settings",
+          "icon": "media/sidebar-icon.svg"
+        },
+        {
+          "id": "csv.pipelinesView",
+          "name": "Pipelines",
+          "icon": "media/sidebar-icon.svg"
+        },
+        {
+          "id": "csv.filesView",
+          "name": "Files",
+          "icon": "media/sidebar-icon.svg"
+        }
+      ]
+    },
+    "viewsWelcome": [
+      {
+        "view": "csv.pipelinesView",
+        "contents": "No pipelines in this workspace.\n\nA pipeline is a reusable set of steps that cleans or reshapes a CSV, saved as a .csvpipe.json file.\n\n[Create a pipeline](command:csv.newPipeline)\n\n[Read the guide](https://github.com/bamr87/csv-vscoode/blob/main/docs/pipelines.md)"
+      },
+      {
+        "view": "csv.filesView",
+        "contents": "No CSV, TSV or PSV files found in this workspace.\n\n[Open a folder](command:vscode.openFolder)",
+        "when": "workbenchState != empty"
+      },
+      {
+        "view": "csv.filesView",
+        "contents": "Open a folder to list its delimited files.\n\n[Open a folder](command:vscode.openFolder)",
+        "when": "workbenchState == empty"
       }
     ]
   },

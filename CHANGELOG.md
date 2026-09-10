@@ -13,6 +13,7 @@ Everything below was developed across the 0.1.0 and 0.2.0 pre-release cycles and
 - `CONTRIBUTING.md` covering setup, architecture and conventions.
 - Screenshots and an animated demo in `media/`.
 - A `release` workflow that builds, tests, packages and publishes on a version tag, with Marketplace and Open VSX publishing gated on their secrets.
+- A CSV container in the activity bar with three views. Settings lists every contributed option grouped and editable in place, with a User/Workspace scope toggle, per-setting reset, and the active file's header and delimiter overrides. Pipelines lists workspace pipelines with matching ones first and runs or edits them inline. Files lists the workspace's delimited files.
 - Local publishing tokens in a git-ignored `.env`, created from the tracked `.env.example`, with `npm run publish:check` to verify them without publishing. `.vscodeignore` excludes `.env` so a token can never be packaged into the VSIX.
 
 ### Fixed in this release

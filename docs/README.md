@@ -25,4 +25,4 @@ Everything the extension can do, grouped by task. Start with [Getting started](g
 
 ## The short version
 
-Open any `.csv`, `.tsv`, `.tab` or `.psv` file and it appears in a spreadsheet-style grid. Edit cells directly and save with `Ctrl+S`; undo works exactly as it does in a text editor because the grid edits the underlying text document. Click the caret in any column header for Excel-style filtering. Use the toolbar menus for row and column operations, the side panels for statistics, charts and SQL, and pipelines when a transformation needs to be repeatable.
+The CSV icon in the activity bar opens a sidebar with three views: Settings, Pipelines and Files. Open any `.csv`, `.tsv`, `.tab` or `.psv` file and it appears in a spreadsheet-style grid. Edit cells directly and save with `Ctrl+S`; undo works exactly as it does in a text editor because the grid edits the underlying text document. Click the caret in any column header for Excel-style filtering. Use the toolbar menus for row and column operations, the side panels for statistics, charts and SQL, and pipelines when a transformation needs to be repeatable.
