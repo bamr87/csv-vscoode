@@ -22,6 +22,11 @@ Press `F5` in VS Code to launch an Extension Development Host with the `samples/
 | `npm test` | Vitest unit tests |
 | `npm run build` | Typecheck plus production bundles. What CI runs. |
 | `npm run package:vsix` | Build and produce a `.vsix` |
+| `npm run publish:check` | Verify publishing tokens without publishing |
+
+## Secrets
+
+Publishing tokens live in a git-ignored `.env`, created from `.env.example`. Nothing else in the repository should ever contain a real token. A `.env` at the repo root would otherwise be packaged into the VSIX, so `.vscodeignore` excludes it explicitly; if you add another secrets file, exclude it in both `.gitignore` and `.vscodeignore`.
 
 ## Architecture
 

@@ -6,10 +6,30 @@ You need a Visual Studio Marketplace publisher and a Personal Access Token.
 
 1. Create an Azure DevOps organisation at https://dev.azure.com.
 2. Create a Personal Access Token with **Marketplace: Manage** scope, and organisation set to **All accessible organizations**. Copy it; it is shown once.
-3. Create a publisher at https://marketplace.visualstudio.com/manage.
-4. The publisher ID must match `publisher` in `package.json`.
+3. The token must belong to a user with rights on the `bash-365` publisher, which owns the published extension. Publishers are managed at https://marketplace.visualstudio.com/manage.
 
-## Checklist
+## Store the tokens
+
+Tokens live in a local `.env` file, which is git-ignored and excluded from the packaged VSIX.
+
+```bash
+cp .env.example .env
+# then fill in VSCE_PAT, and OVSX_PAT if you publish to Open VSX
+```
+
+`.env.example` documents each variable and how to create it. Real values never belong anywhere else in the repository: a `.env` at the repo root is packaged into the VSIX by default, which is why `.vscodeignore` excludes it explicitly.
+
+Check that the tokens are picked up without publishing anything:
+
+```bash
+npm run publish:check
+```
+
+That prints the identifier, the version, and each token masked, then shows the commands it would run.
+
+Values already in the real environment take precedence over the file, so CI secrets are never shadowed by a stale local copy. The release workflow does not read `.env`; it uses repository secrets of the same names, set under **Settings > Secrets and variables > Actions**.
+
+## Checklist## Checklist
 
 - [ ] `npm run build` passes
 - [ ] `npm run lint` passes
@@ -59,23 +79,24 @@ Uninstall with `code --uninstall-extension bash-365.csv-grid-viewer`.
 ## Publish
 
 ```bash
-npx @vscode/vsce login <publisher-id>
 npm run publish:extension
 ```
 
-Or publish an already-built package:
+This reads `VSCE_PAT` from `.env`, packages the extension if the `.vsix` for the current version is missing, and publishes. To publish to Open VSX as well:
 
 ```bash
-npx @vscode/vsce publish --packagePath csv-grid-viewer-<version>.vsix
+npm run publish:openvsx
 ```
 
-Publishing from CI uses a token instead of an interactive login:
+The script refuses to run if `VSCE_PUBLISHER` is set to something other than the publisher in `package.json`, because publishing under a different publisher creates a separate listing rather than updating the existing one.
+
+Publishing from CI uses the same token as a repository secret:
 
 ```bash
 npx @vscode/vsce publish --no-dependencies --pat "$VSCE_PAT"
 ```
 
-The release workflow in `.github/workflows/release.yml` does this on a tag push when the `VSCE_PAT` repository secret is set. Without that secret it still builds and attaches the `.vsix` to the GitHub release, so tagging is safe before the secret exists.
+The release workflow in `.github/workflows/release.yml` does this on a tag push when the `VSCE_PAT` secret is set. Without that secret it still builds and attaches the `.vsix` to the GitHub release, so tagging is safe before the secret exists.
 
 ## Tag a release
 
@@ -86,10 +107,10 @@ git push origin v1.0.0
 
 ## Open VSX
 
-Publishing to Open VSX, which is what VSCodium and Gitpod use, is a separate step:
+Open VSX is the registry VSCodium and Gitpod use. Publishing there is optional and needs `OVSX_PAT` in `.env`:
 
 ```bash
-npx ovsx publish csv-grid-viewer-<version>.vsix -p "$OVSX_PAT"
+npm run publish:openvsx
 ```
 
 ## After publishing

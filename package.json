@@ -466,7 +466,9 @@
     "publish:init": "node ./scripts/init-publish.mjs",
     "package:vsix": "node ./scripts/package-vsix.mjs",
     "publish:login": "npx @vscode/vsce login",
-    "publish:extension": "npx @vscode/vsce publish --no-dependencies"
+    "publish:extension": "node ./scripts/publish.mjs",
+    "publish:openvsx": "node ./scripts/publish.mjs --openvsx-only",
+    "publish:check": "node ./scripts/publish.mjs --dry-run"
   },
   "dependencies": {
     "chart.js": "^4.5.1",

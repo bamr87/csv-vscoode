@@ -40,3 +40,8 @@ media/demo.gif
 media/screenshots/**
 
 *.vsix
+
+# Secrets. A .env at the repo root is packaged by default, so this is the
+# difference between a local token and a token published to the Marketplace.
+.env
+.env.*

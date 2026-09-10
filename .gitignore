@@ -3,3 +3,8 @@ out
 *.vsix
 .vscode-test
 .playwright-mcp
+
+# Local secrets. .env.example is the tracked template.
+.env
+.env.*
+!.env.example
