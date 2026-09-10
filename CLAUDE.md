@@ -9,11 +9,14 @@ Guidance for AI coding agents (Claude Code, Copilot, Cursor) working in **csv-vs
 <!-- TODO: fill in the real commands; delete rows that don't apply. -->
 
 ```bash
-# install dependencies:
-# run the dev server / build:
-# run tests:
-# lint:
+npm install            # install dependencies
+npm run compile        # dev build (esbuild) / npm run watch
+npm run build          # typecheck + production bundles (CI)
+npm test               # vitest unit tests (test/)
+npm run lint           # eslint
 ```
+
+TypeScript VS Code extension. `src/core/` is pure (no `vscode`/DOM imports) and shared by the host, the `webview/` bundle, and tests; keep it that way. Libraries: PapaParse (parse), Tabulator (grid), sql.js (SQL), Chart.js (charts), bundled with esbuild.
 
 ## Conventions
 

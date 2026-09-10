@@ -1,0 +1,17 @@
+{
+  "$schema": "../schemas/csvpipe.schema.json",
+  "name": "Clean products",
+  "description": "Normalise the product list, compute stock value and keep in-stock items.",
+  "applyTo": ["samples/products.csv"],
+  "trigger": "manual",
+  "output": { "target": "newDocument", "format": "csv" },
+  "steps": [
+    { "kind": "trim" },
+    { "kind": "changeCase", "columns": ["category"], "case": "title" },
+    { "kind": "fillEmpty", "columns": ["qty"], "value": "0" },
+    { "kind": "filter", "expression": "in_stock && qty > 0" },
+    { "kind": "compute", "column": "stock_value", "expression": "round(price * qty, 2)" },
+    { "kind": "sort", "column": "stock_value", "direction": "desc" },
+    { "kind": "select", "columns": ["sku", "name", "category", "qty", "stock_value"] }
+  ]
+}

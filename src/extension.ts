@@ -1,330 +1,360 @@
 import * as vscode from "vscode";
-
-type CsvCell = {
-  display: string;
-  numericValue: number | null;
-};
+import { CsvEditorProvider, GridSession, VIEW_TYPE } from "./csvEditorProvider";
+import { pickFormatAndExport } from "./exportCommands";
+import { CsvHoverProvider, CSV_SELECTOR, RainbowTokensProvider, registerFieldCountLinter } from "./textMode";
+import { DELIMITER_CHOICES, describeDelimiter, isCsvLikeUri } from "./settings";
+import { registerStatusBar } from "./statusBar";
+import { CsvDocumentModel } from "./documentModel";
+import type { PanelId } from "./core/messages";
+import { PipelineService } from "./pipelines";
+import { FilesViewProvider } from "./views/filesView";
+import { PipelinesViewProvider } from "./views/pipelinesView";
+import { SettingsViewProvider } from "./views/settingsView";
+import type { SettingScope } from "./views/settingsModel";
 
 export function activate(context: vscode.ExtensionContext): void {
-  const disposable = vscode.commands.registerCommand("csvGridViewer.openGrid", async (uri?: vscode.Uri) => {
-    const targetUri = resolveTargetUri(uri);
-    if (!targetUri) {
-      vscode.window.showErrorMessage("Open a CSV file first, then run 'CSV: Open Grid View'.");
+  const pipelines = new PipelineService(context);
+  const provider = CsvEditorProvider.register(context, pipelines);
+  registerStatusBar(context, provider);
+
+  context.subscriptions.push(
+    vscode.languages.registerDocumentSemanticTokensProvider(
+      CSV_SELECTOR,
+      new RainbowTokensProvider(),
+      RainbowTokensProvider.legend
+    ),
+    vscode.languages.registerHoverProvider(CSV_SELECTOR, new CsvHoverProvider())
+  );
+  registerFieldCountLinter(context);
+  const views = registerSidebar(context, pipelines);
+
+  /** Resolve the CSV the user means: explicit URI, active grid, or active text editor. */
+  const resolveUri = (uri?: vscode.Uri): vscode.Uri | undefined => {
+    if (uri) {
+      return uri;
+    }
+    if (provider.active) {
+      return provider.active.document.uri;
+    }
+    const editorUri = vscode.window.activeTextEditor?.document.uri;
+    if (editorUri && (isCsvLikeUri(editorUri) || vscode.window.activeTextEditor?.document.languageId === "csv")) {
+      return editorUri;
+    }
+    return undefined;
+  };
+
+  /** Open (or reveal) the grid for a URI and return its session once ready. */
+  const openGrid = async (uri?: vscode.Uri): Promise<GridSession | undefined> => {
+    const target = resolveUri(uri);
+    if (!target) {
+      vscode.window.showErrorMessage("Open a CSV file first.");
+      return undefined;
+    }
+    const existing = provider.sessionFor(target);
+    if (existing) {
+      existing.panel.reveal();
+      return existing;
+    }
+    await vscode.commands.executeCommand("vscode.openWith", target, VIEW_TYPE);
+    return provider.sessionFor(target);
+  };
+
+  const withGridPanel = (panel: PanelId) => async (uri?: unknown) => {
+    const session = await openGrid(uri instanceof vscode.Uri ? uri : undefined);
+    session?.focusPanel(panel);
+  };
+
+  const register = (command: string, callback: (...args: unknown[]) => unknown): void => {
+    context.subscriptions.push(vscode.commands.registerCommand(command, callback));
+  };
+
+  register("csv.openGrid", (uri?: unknown) => openGrid(uri instanceof vscode.Uri ? uri : undefined));
+
+  // Internal: re-read a document after its per-file overrides changed.
+  register("csv.reloadDocument", (uri?: unknown) => {
+    if (!(uri instanceof vscode.Uri)) {
       return;
     }
-
-    if (!isCsvFile(targetUri)) {
-      vscode.window.showErrorMessage("This command supports only .csv files.");
-      return;
+    const session = provider.sessionFor(uri);
+    if (session) {
+      session.model.invalidate();
+      session.sendTable();
     }
-
-    let text: string;
-    try {
-      const bytes = await vscode.workspace.fs.readFile(targetUri);
-      text = Buffer.from(bytes).toString("utf8");
-    } catch (error) {
-      const message = error instanceof Error ? error.message : "Unknown file read error.";
-      vscode.window.showErrorMessage(`Could not read CSV file: ${message}`);
-      return;
-    }
-
-    const rows = parseCsv(text);
-    const panel = vscode.window.createWebviewPanel(
-      "csvGridViewer.panel",
-      `CSV Grid: ${vscode.workspace.asRelativePath(targetUri, false)}`,
-      vscode.ViewColumn.Active,
-      {
-        enableScripts: true
-      }
-    );
-
-    panel.webview.html = getWebviewHtml(rows, panel.webview);
   });
 
-  context.subscriptions.push(disposable);
+  register("csv.openAsText", async (uri?: unknown) => {
+    const target = resolveUri(uri instanceof vscode.Uri ? uri : undefined);
+    if (target) {
+      await vscode.commands.executeCommand("vscode.openWith", target, "default");
+    }
+  });
+
+  register("csv.runSql", withGridPanel("sql"));
+  register("csv.columnStats", withGridPanel("stats"));
+  register("csv.chart", withGridPanel("chart"));
+
+  register("csv.find", async (uri?: unknown) => {
+    const session = await openGrid(uri instanceof vscode.Uri ? uri : undefined);
+    session?.focusFind();
+  });
+
+  register("csv.export", async (uri?: unknown) => {
+    const target = resolveUri(uri instanceof vscode.Uri ? uri : undefined);
+    if (!target) {
+      vscode.window.showErrorMessage("Open a CSV file first.");
+      return;
+    }
+    const session = provider.sessionFor(target);
+    const model = session?.model ?? new CsvDocumentModel(await vscode.workspace.openTextDocument(target), context.workspaceState);
+    await pickFormatAndExport(model.getTable(), target);
+  });
+
+  register("csv.toggleHeaderRow", async () => {
+    const session = provider.active ?? (await openGrid());
+    if (!session) {
+      return;
+    }
+    const next = !session.model.hasHeader;
+    await session.model.setHasHeader(next);
+    session.sendTable();
+    session.post({ type: "setHeader", hasHeader: next });
+  });
+
+  register("csv.setDelimiter", async () => {
+    const session = provider.active ?? (await openGrid());
+    if (!session) {
+      return;
+    }
+    const pick = await vscode.window.showQuickPick(
+      DELIMITER_CHOICES.map((c) => ({
+        label: c.label,
+        description: c.value !== "auto" && c.value === session.model.delimiter ? "current" : undefined,
+        value: c.value
+      })),
+      { placeHolder: `Delimiter (currently ${describeDelimiter(session.model.delimiter)})` }
+    );
+    if (!pick) {
+      return;
+    }
+    await session.model.setDelimiter(pick.value);
+    session.sendTable();
+  });
+
+  register("csv.openPipelinePanel", withGridPanel("pipeline"));
+  register("csv.showPipelineLog", () => pipelines.showLog());
+
+  register("csv.runPipeline", async (arg?: unknown) => {
+    const argUri = arg instanceof vscode.Uri ? arg : undefined;
+    let pipelinePath: string | undefined;
+    let target: vscode.Uri | undefined;
+    if (argUri && argUri.path.endsWith(".csvpipe.json")) {
+      pipelinePath = vscode.workspace.asRelativePath(argUri, false);
+      target = resolveUri();
+      if (!target) {
+        const picked = await vscode.window.showOpenDialog({ canSelectMany: false, filters: { "Delimited files": ["csv", "tsv", "tab", "psv"] }, title: "CSV file to process" });
+        target = picked?.[0];
+      }
+    } else {
+      target = resolveUri(argUri);
+    }
+    if (!target) {
+      vscode.window.showErrorMessage("Open a CSV file first.");
+      return;
+    }
+    if (!pipelinePath) {
+      const items = await pipelines.list(target);
+      if (items.length === 0) {
+        const create = await vscode.window.showInformationMessage("No *.csvpipe.json pipelines found in the workspace.", "Create one", "Open pipeline panel");
+        if (create === "Create one") {
+          await vscode.commands.executeCommand("csv.newPipeline");
+        } else if (create) {
+          await vscode.commands.executeCommand("csv.openPipelinePanel", target);
+        }
+        return;
+      }
+      const pick = await vscode.window.showQuickPick(
+        items.map((i) => ({ label: `${i.matches ? "$(star-full) " : ""}${i.name}`, description: i.path, detail: `trigger: ${i.trigger}`, path: i.path })),
+        { placeHolder: `Run a pipeline on ${vscode.workspace.asRelativePath(target, false)}` }
+      );
+      if (!pick) {
+        return;
+      }
+      pipelinePath = pick.path;
+    }
+    try {
+      const { pipeline } = await pipelines.load(pipelinePath);
+      const session = provider.sessionFor(target);
+      const model = session?.model ?? new CsvDocumentModel(await vscode.workspace.openTextDocument(target), context.workspaceState);
+      const result = await vscode.window.withProgress({ location: vscode.ProgressLocation.Notification, title: `CSV pipeline: ${pipeline.name}` }, () =>
+        pipelines.run(pipeline, model.getTable(), target)
+      );
+      if (!result.ok) {
+        const failed = result.steps.find((s) => s.error);
+        void vscode.window.showErrorMessage(`Pipeline stopped: ${failed?.label}: ${failed?.error}`, "Show log").then((c) => c && pipelines.showLog());
+        return;
+      }
+      const info = await pipelines.deliver(result, pipeline, target, session?.model);
+      vscode.window.showInformationMessage(`Pipeline "${pipeline.name}": ${result.table.rows.length.toLocaleString()} rows. ${info}`);
+    } catch (error) {
+      void vscode.window.showErrorMessage(`CSV pipeline: ${error instanceof Error ? error.message : String(error)}`, "Show log").then((c) => c && pipelines.showLog());
+    }
+  });
+
+  register("csv.newPipeline", async () => {
+    const name = await vscode.window.showInputBox({ prompt: "Pipeline name", value: "My pipeline" });
+    if (!name) {
+      return;
+    }
+    const current = resolveUri();
+    try {
+      const uri = await pipelines.createFromTemplate(name, current ? vscode.workspace.asRelativePath(current, false) : undefined);
+      if (uri) {
+        views.pipelines.refresh();
+        await vscode.window.showTextDocument(uri);
+      }
+    } catch (error) {
+      vscode.window.showErrorMessage(`CSV pipeline: ${error instanceof Error ? error.message : String(error)}`);
+    }
+  });
+
+  register("csv.newPipelineScript", async () => {
+    const path = await vscode.window.showInputBox({ prompt: "Script path (workspace-relative)", value: "scripts/transform.js" });
+    if (!path) {
+      return;
+    }
+    try {
+      const uri = await pipelines.createScript(path);
+      await vscode.window.showTextDocument(uri);
+    } catch (error) {
+      vscode.window.showErrorMessage(`CSV pipeline: ${error instanceof Error ? error.message : String(error)}`);
+    }
+  });
+
+  register("csv.showActions", async () => {
+    const actions: { label: string; command: string }[] = [
+      { label: "$(search) Find and replace", command: "csv.find" },
+      { label: "$(graph) Column statistics", command: "csv.columnStats" },
+      { label: "$(pie-chart) Chart a column", command: "csv.chart" },
+      { label: "$(database) Run SQL query", command: "csv.runSql" },
+      { label: "$(export) Export as…", command: "csv.export" },
+      { label: "$(run-all) Run pipeline…", command: "csv.runPipeline" },
+      { label: "$(tools) Pipeline builder", command: "csv.openPipelinePanel" },
+      { label: "$(list-flat) Toggle header row", command: "csv.toggleHeaderRow" },
+      { label: "$(symbol-operator) Set delimiter", command: "csv.setDelimiter" },
+      { label: "$(file-code) Open as text", command: "csv.openAsText" }
+    ];
+    const pick = await vscode.window.showQuickPick(actions, { placeHolder: "CSV actions" });
+    if (pick) {
+      await vscode.commands.executeCommand(pick.command);
+    }
+  });
+}
+
+interface SidebarViews {
+  settings: SettingsViewProvider;
+  pipelines: PipelinesViewProvider;
+  files: FilesViewProvider;
+  refreshAll(): void;
+}
+
+/**
+ * The CSV container in the activity bar: settings, pipelines and the
+ * workspace's delimited files.
+ */
+function registerSidebar(context: vscode.ExtensionContext, pipelineService: PipelineService): SidebarViews {
+  const settings = new SettingsViewProvider(context);
+  const pipelines = new PipelinesViewProvider(pipelineService);
+  const files = new FilesViewProvider();
+
+  const settingsTree = vscode.window.createTreeView("csv.settingsView", { treeDataProvider: settings, showCollapseAll: true });
+  const pipelinesTree = vscode.window.createTreeView("csv.pipelinesView", { treeDataProvider: pipelines });
+  const filesTree = vscode.window.createTreeView("csv.filesView", { treeDataProvider: files });
+  context.subscriptions.push(settingsTree, pipelinesTree, filesTree);
+
+  const syncScopeLabel = (): void => {
+    settingsTree.description = settings.scope === "user" ? "User" : "Workspace";
+  };
+  syncScopeLabel();
+
+  const refreshAll = (): void => {
+    settings.refresh();
+    pipelines.refresh();
+    files.refresh();
+  };
+
+  // Keep the views honest as the workspace changes underneath them.
+  context.subscriptions.push(
+    vscode.workspace.onDidChangeConfiguration((e) => {
+      if (e.affectsConfiguration("csv")) {
+        settings.refresh();
+      }
+    }),
+    vscode.window.onDidChangeActiveTextEditor(() => {
+      settings.refresh();
+      pipelines.refresh();
+    }),
+    vscode.workspace.onDidSaveTextDocument((document) => {
+      if (document.uri.path.endsWith(".csvpipe.json")) {
+        pipelines.refresh();
+      }
+    })
+  );
+
+  const watcher = vscode.workspace.createFileSystemWatcher("**/*.{csv,tsv,tab,psv,csvpipe.json}");
+  const onFileChange = (): void => {
+    files.refresh();
+    pipelines.refresh();
+  };
+  watcher.onDidCreate(onFileChange);
+  watcher.onDidDelete(onFileChange);
+  context.subscriptions.push(watcher);
+
+  const register = (command: string, callback: (...args: never[]) => unknown): void => {
+    context.subscriptions.push(vscode.commands.registerCommand(command, callback as (...args: unknown[]) => unknown));
+  };
+
+  register("csv.views.refresh", () => refreshAll());
+
+  register("csv.settings.edit", (key: string) => settings.edit(key));
+  register("csv.settings.reset", (node: { def?: { key: string } }) => (node?.def ? settings.reset(node.def.key) : undefined));
+  register("csv.settings.resetAll", () => settings.resetAll());
+  register("csv.settings.openNative", () => vscode.commands.executeCommand("workbench.action.openSettings", "@ext:bash-365.csv-grid-viewer"));
+  register("csv.settings.selectScope", async () => {
+    const picked = await vscode.window.showQuickPick(
+      [
+        { label: "Workspace", description: "applies to this project only", value: "workspace" as SettingScope },
+        { label: "User", description: "applies everywhere", value: "user" as SettingScope }
+      ],
+      { placeHolder: "Which settings does the sidebar edit?" }
+    );
+    if (picked) {
+      await settings.setScope(picked.value);
+      syncScopeLabel();
+    }
+  });
+  register("csv.settings.editFileOverride", (which: "header" | "delimiter", uri: vscode.Uri) => settings.editFileOverride(which, uri));
+  register("csv.settings.clearFileOverride", (node: { uri?: vscode.Uri }) => (node?.uri ? settings.clearFileOverrides(node.uri) : undefined));
+
+  register("csv.pipelines.run", (node: unknown) => {
+    const path = pipelines.pathOf(node as Parameters<typeof pipelines.pathOf>[0]);
+    return vscode.commands.executeCommand("csv.runPipeline", path ? pipelineService.resolveWorkspacePath(path) : undefined);
+  });
+  register("csv.pipelines.edit", async (node: unknown) => {
+    const path = pipelines.pathOf(node as Parameters<typeof pipelines.pathOf>[0]);
+    if (path) {
+      await vscode.window.showTextDocument(pipelineService.resolveWorkspacePath(path));
+    }
+  });
+
+  register("csv.files.openAsText", async (node: { uri?: vscode.Uri }) => {
+    if (node?.uri) {
+      await vscode.commands.executeCommand("vscode.openWith", node.uri, "default");
+    }
+  });
+
+  return { settings, pipelines, files, refreshAll };
 }
 
 export function deactivate(): void {
-  // no-op
-}
-
-function resolveTargetUri(uri?: vscode.Uri): vscode.Uri | undefined {
-  if (uri) {
-    return uri;
-  }
-
-  const editorUri = vscode.window.activeTextEditor?.document.uri;
-  if (editorUri) {
-    return editorUri;
-  }
-
-  return undefined;
-}
-
-function isCsvFile(uri: vscode.Uri): boolean {
-  return uri.path.toLowerCase().endsWith(".csv");
-}
-
-function parseCsv(content: string): CsvCell[][] {
-  const rows: CsvCell[][] = [];
-  let row: CsvCell[] = [];
-  let field = "";
-  let inQuotes = false;
-
-  const pushField = (): void => {
-    const trimmed = field.trim();
-    const parsed = trimmed.length > 0 ? Number(trimmed) : Number.NaN;
-    row.push({
-      display: field,
-      numericValue: Number.isFinite(parsed) ? parsed : null
-    });
-    field = "";
-  };
-
-  const pushRow = (): void => {
-    if (row.length > 0 || rows.length > 0) {
-      rows.push(row);
-    }
-    row = [];
-  };
-
-  for (let i = 0; i < content.length; i += 1) {
-    const ch = content[i];
-
-    if (ch === "\"") {
-      if (inQuotes && content[i + 1] === "\"") {
-        field += "\"";
-        i += 1;
-      } else {
-        inQuotes = !inQuotes;
-      }
-      continue;
-    }
-
-    if (ch === "," && !inQuotes) {
-      pushField();
-      continue;
-    }
-
-    if ((ch === "\n" || ch === "\r") && !inQuotes) {
-      if (ch === "\r" && content[i + 1] === "\n") {
-        i += 1;
-      }
-      pushField();
-      pushRow();
-      continue;
-    }
-
-    field += ch;
-  }
-
-  if (field.length > 0 || row.length > 0) {
-    pushField();
-  }
-
-  if (row.length > 0) {
-    pushRow();
-  }
-
-  return rows;
-}
-
-function getWebviewHtml(rows: CsvCell[][], webview: vscode.Webview): string {
-  const nonce = String(Date.now());
-  const safeRows = JSON.stringify(rows).replace(/</g, "\\u003c");
-  const csp = [
-    "default-src 'none'",
-    `style-src ${webview.cspSource} 'unsafe-inline'`,
-    `script-src 'nonce-${nonce}'`
-  ].join("; ");
-
-  return `<!DOCTYPE html>
-<html lang="en">
-<head>
-  <meta charset="UTF-8" />
-  <meta http-equiv="Content-Security-Policy" content="${csp}" />
-  <meta name="viewport" content="width=device-width, initial-scale=1.0" />
-  <title>CSV Grid Viewer</title>
-  <style>
-    body {
-      font-family: var(--vscode-font-family);
-      color: var(--vscode-editor-foreground);
-      background: var(--vscode-editor-background);
-      margin: 0;
-      padding: 12px;
-    }
-    .toolbar {
-      display: flex;
-      gap: 16px;
-      align-items: center;
-      margin-bottom: 10px;
-      position: sticky;
-      top: 0;
-      padding: 8px 0;
-      background: var(--vscode-editor-background);
-      z-index: 10;
-    }
-    .metric {
-      font-size: 13px;
-    }
-    button {
-      background: var(--vscode-button-background);
-      color: var(--vscode-button-foreground);
-      border: none;
-      border-radius: 4px;
-      padding: 4px 10px;
-      cursor: pointer;
-    }
-    button:hover {
-      background: var(--vscode-button-hoverBackground);
-    }
-    .grid-wrap {
-      overflow: auto;
-      max-height: calc(100vh - 84px);
-      border: 1px solid var(--vscode-panel-border);
-    }
-    table {
-      border-collapse: collapse;
-      width: max-content;
-      min-width: 100%;
-    }
-    td, th {
-      border: 1px solid var(--vscode-panel-border);
-      padding: 6px 10px;
-      white-space: nowrap;
-      user-select: none;
-      cursor: pointer;
-    }
-    th {
-      background: color-mix(in srgb, var(--vscode-editor-background) 80%, var(--vscode-editor-foreground));
-      position: sticky;
-      top: 0;
-      z-index: 5;
-    }
-    td.selected {
-      background: color-mix(in srgb, var(--vscode-focusBorder) 25%, transparent);
-      outline: 1px solid var(--vscode-focusBorder);
-      outline-offset: -1px;
-    }
-    td.numeric::after {
-      content: "";
-      display: inline-block;
-      width: 6px;
-      height: 6px;
-      margin-left: 6px;
-      border-radius: 999px;
-      background: color-mix(in srgb, var(--vscode-editorInfo-foreground) 60%, transparent);
-      vertical-align: middle;
-    }
-    .empty {
-      opacity: 0.8;
-      font-style: italic;
-    }
-  </style>
-</head>
-<body>
-  <div class="toolbar">
-    <button id="clearBtn" type="button">Clear Selection</button>
-    <div class="metric" id="countLabel">Selected Cells: 0</div>
-    <div class="metric" id="sumLabel">Numeric Sum: 0</div>
-  </div>
-  <div class="grid-wrap" id="gridWrap"></div>
-
-  <script nonce="${nonce}">
-    const rows = ${safeRows};
-    const selected = new Set();
-    const numericValues = new Map();
-
-    const gridWrap = document.getElementById("gridWrap");
-    const countLabel = document.getElementById("countLabel");
-    const sumLabel = document.getElementById("sumLabel");
-    const clearBtn = document.getElementById("clearBtn");
-
-    if (!Array.isArray(rows) || rows.length === 0) {
-      const empty = document.createElement("div");
-      empty.className = "empty";
-      empty.textContent = "No rows found in this CSV.";
-      gridWrap.appendChild(empty);
-    } else {
-      const table = document.createElement("table");
-      const thead = document.createElement("thead");
-      const tbody = document.createElement("tbody");
-
-      const maxCols = rows.reduce((max, row) => Math.max(max, row.length), 0);
-      const headerRow = document.createElement("tr");
-      const topLeft = document.createElement("th");
-      topLeft.textContent = "#";
-      headerRow.appendChild(topLeft);
-      for (let c = 0; c < maxCols; c += 1) {
-        const th = document.createElement("th");
-        th.textContent = "Col " + (c + 1);
-        headerRow.appendChild(th);
-      }
-      thead.appendChild(headerRow);
-
-      rows.forEach((row, r) => {
-        const tr = document.createElement("tr");
-        const rowIndex = document.createElement("th");
-        rowIndex.textContent = String(r + 1);
-        tr.appendChild(rowIndex);
-
-        for (let c = 0; c < maxCols; c += 1) {
-          const cell = row[c] || { display: "", numericValue: null };
-          const td = document.createElement("td");
-          td.textContent = cell.display;
-          const key = r + ":" + c;
-          td.dataset.key = key;
-
-          if (typeof cell.numericValue === "number" && Number.isFinite(cell.numericValue)) {
-            numericValues.set(key, cell.numericValue);
-            td.classList.add("numeric");
-          }
-
-          td.addEventListener("click", () => {
-            if (selected.has(key)) {
-              selected.delete(key);
-              td.classList.remove("selected");
-            } else {
-              selected.add(key);
-              td.classList.add("selected");
-            }
-            refreshMetrics();
-          });
-
-          tr.appendChild(td);
-        }
-
-        tbody.appendChild(tr);
-      });
-
-      table.appendChild(thead);
-      table.appendChild(tbody);
-      gridWrap.appendChild(table);
-    }
-
-    clearBtn.addEventListener("click", () => {
-      for (const key of selected) {
-        const el = document.querySelector('td[data-key="' + key + '"]');
-        if (el) {
-          el.classList.remove("selected");
-        }
-      }
-      selected.clear();
-      refreshMetrics();
-    });
-
-    function refreshMetrics() {
-      countLabel.textContent = "Selected Cells: " + selected.size;
-      let sum = 0;
-      for (const key of selected) {
-        const value = numericValues.get(key);
-        if (typeof value === "number") {
-          sum += value;
-        }
-      }
-      sumLabel.textContent = "Numeric Sum: " + sum;
-    }
-  </script>
-</body>
-</html>`;
+  // Disposables are released through context.subscriptions.
 }
