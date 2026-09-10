@@ -10,6 +10,11 @@ import { loadEnv, mask, requireToken } from "./load-env.mjs";
  *   node scripts/publish.mjs --openvsx       Marketplace and Open VSX
  *   node scripts/publish.mjs --openvsx-only  Open VSX only
  *   node scripts/publish.mjs --dry-run       Check tokens and inputs, publish nothing
+ *
+ * Tokens are passed to vsce and ovsx through the environment, never on the
+ * command line. An argv token is visible to `ps`, and Node echoes the whole
+ * command line when a child process fails, which would put the secret in the
+ * terminal and in any CI log.
  */
 const args = process.argv.slice(2);
 const dryRun = args.includes("--dry-run");
@@ -22,14 +27,26 @@ const pkg = JSON.parse(readFileSync("package.json", "utf8"));
 const { name, version, publisher } = pkg;
 const vsix = `${name}-${version}.vsix`;
 
-function run(command, commandArgs) {
+function run(command, commandArgs, label) {
   if (dryRun) {
-    // Never echo the token itself, even in a dry run.
-    const shown = commandArgs.map((a, i) => (commandArgs[i - 1] === "--pat" || commandArgs[i - 1] === "-p" ? "<token>" : a));
-    console.log(`[dry run] ${command} ${shown.join(" ")}`);
-    return;
+    console.log(`[dry run] ${command} ${commandArgs.join(" ")}`);
+    return true;
   }
-  execFileSync(command, commandArgs, { stdio: "inherit", shell: process.platform === "win32" });
+  try {
+    execFileSync(command, commandArgs, {
+      stdio: "inherit",
+      shell: process.platform === "win32",
+      env: process.env
+    });
+    return true;
+  } catch (error) {
+    // Report the failure without echoing the command, which upstream error
+    // messages include verbatim.
+    const status = typeof error?.status === "number" ? error.status : "unknown";
+    console.error("");
+    console.error(`${label} failed (exit code ${status}). Output from the tool is above.`);
+    return false;
+  }
 }
 
 console.log(`Extension : ${publisher}.${name}`);
@@ -56,7 +73,9 @@ if (alsoOpenVsx) {
 if (!existsSync(vsix)) {
   console.log("");
   console.log(`${vsix} not found; building it.`);
-  run("npm", ["run", "package:vsix"]);
+  if (!run("npm", ["run", "package:vsix"], "Packaging")) {
+    process.exit(1);
+  }
 } else {
   console.log(`Package   : ${vsix}`);
 }
@@ -67,21 +86,32 @@ if (strays.length > 0) {
   console.warn(`Other .vsix files are present and will not be published: ${strays.join(", ")}`);
 }
 
+const failures = [];
+
 if (!openVsxOnly) {
   console.log("");
   console.log("Publishing to the Visual Studio Marketplace...");
-  run("npx", ["@vscode/vsce", "publish", "--no-dependencies", "--packagePath", vsix, "--pat", process.env.VSCE_PAT]);
+  // vsce reads VSCE_PAT from the environment.
+  if (!run("npx", ["@vscode/vsce", "publish", "--no-dependencies", "--packagePath", vsix], "Marketplace publish")) {
+    failures.push("Visual Studio Marketplace");
+  }
 }
 
 if (alsoOpenVsx) {
   console.log("");
   console.log("Publishing to Open VSX...");
-  run("npx", ["ovsx", "publish", vsix, "-p", process.env.OVSX_PAT]);
+  // ovsx reads OVSX_PAT from the environment.
+  if (!run("npx", ["ovsx", "publish", vsix], "Open VSX publish")) {
+    failures.push("Open VSX");
+  }
 }
 
 console.log("");
 if (dryRun) {
   console.log("Dry run complete; nothing was published.");
+} else if (failures.length > 0) {
+  console.error(`Failed to publish to: ${failures.join(", ")}`);
+  process.exit(1);
 } else {
   console.log("Published.");
   console.log(`https://marketplace.visualstudio.com/items?itemName=${publisher}.${name}`);
