@@ -68,7 +68,7 @@ The webview never touches the file. It sends typed `EditOp` values to the host, 
 2. If it changes data, express it as an `EditOp` so undo works for free.
 3. Wire it into the webview as a `GridAction`, and add it to the relevant toolbar or context menu.
 4. If it makes sense as a repeatable transformation, add it as a pipeline step: a `StepDef` entry, a case in `applyPureStep` or `applyStep`, and an entry in `schemas/csvpipe.schema.json`.
-5. Update the documentation in `docs/` and add a `CHANGELOG.md` entry.
+5. Update the documentation in `docs/` and add a `CHANGELOG.md` entry. Both are the source of the published site at [apps.bash-365.com/csv-vscode](https://apps.bash-365.com/csv-vscode/), which rebuilds itself from them — see [`site/README.md`](site/README.md).
 
 ## Testing
 

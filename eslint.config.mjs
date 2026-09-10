@@ -3,7 +3,7 @@ import tseslint from "typescript-eslint";
 
 export default tseslint.config(
   {
-    ignores: ["out/**", "node_modules/**", "tools/**", "*.vsix"]
+    ignores: ["out/**", "node_modules/**", "tools/**", "*.vsix", "site/**"]
   },
   js.configs.recommended,
   ...tseslint.configs.recommended,

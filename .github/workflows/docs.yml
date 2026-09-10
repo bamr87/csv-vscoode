@@ -1,0 +1,133 @@
+# Builds the documentation site in site/ and publishes it to GitHub Pages at
+# https://apps.bash-365.com/csv-vscode.
+#
+# The site is a static Astro/Starlight build. Its guide pages are generated from
+# the repository's own markdown by site/scripts/sync-docs.mjs, which is why a
+# change to docs/, README.md, CHANGELOG.md, CONTRIBUTING.md, package.json or
+# schemas/ triggers a rebuild as well as a change to site/ itself.
+#
+# Node 22 here, not the Node 20 the extension builds on: Astro 7 requires it.
+# The two toolchains are independent — the site has its own package.json and
+# lockfile, and nothing it installs reaches the VSIX.
+#
+# The URL's path segment is produced by laying the build out under a
+# csv-vscode/ directory in the artifact, not by GitHub. A custom domain on a
+# project Pages site serves from the domain root, so the path has to come from
+# the artifact's own shape. That also means SITE_BASE below is the single place
+# that decides the path.
+name: docs
+
+on:
+  push:
+    branches: [main]
+    paths:
+      - "site/**"
+      - "docs/**"
+      - "media/**"
+      - "samples/**"
+      - "schemas/**"
+      - "src/core/**"
+      - "README.md"
+      - "CHANGELOG.md"
+      - "CONTRIBUTING.md"
+      - "package.json"
+      - ".github/workflows/docs.yml"
+  pull_request:
+    paths:
+      - "site/**"
+      - "docs/**"
+      - "media/**"
+      - "samples/**"
+      - "schemas/**"
+      - "src/core/**"
+      - "README.md"
+      - "CHANGELOG.md"
+      - "CONTRIBUTING.md"
+      - ".github/workflows/docs.yml"
+  # Lets a documentation fix be republished without an empty commit.
+  workflow_dispatch:
+
+env:
+  SITE_URL: https://apps.bash-365.com
+  SITE_BASE: /csv-vscode
+  CUSTOM_DOMAIN: apps.bash-365.com
+  ASTRO_TELEMETRY_DISABLED: "1"
+
+permissions:
+  contents: read
+
+concurrency:
+  group: docs-${{ github.ref }}
+  cancel-in-progress: true
+
+jobs:
+  build:
+    runs-on: ubuntu-latest
+    timeout-minutes: 15
+    steps:
+      - uses: actions/checkout@v5
+
+      - uses: actions/setup-node@v5
+        with:
+          node-version: "22"
+          cache: npm
+          cache-dependency-path: site/package-lock.json
+
+      - name: Install
+        working-directory: site
+        run: npm ci
+
+      - name: Build
+        working-directory: site
+        run: npm run build
+
+      - name: Lay the site out under the published path
+        run: |
+          set -euo pipefail
+          # SITE_BASE is "/csv-vscode"; strip the leading slash to get the
+          # directory the build has to sit in.
+          path="${SITE_BASE#/}"
+          rm -rf _site
+          mkdir -p "_site/${path}"
+          cp -R site/dist/. "_site/${path}/"
+
+          # A visitor who lands on the bare domain should end up at the docs
+          # rather than at a 404.
+          cat > _site/index.html <<HTML
+          <!doctype html>
+          <meta charset="utf-8">
+          <title>CSV Grid Editor</title>
+          <meta http-equiv="refresh" content="0; url=${SITE_BASE}/">
+          <link rel="canonical" href="${SITE_URL}${SITE_BASE}/">
+          <p>Redirecting to <a href="${SITE_BASE}/">the CSV Grid Editor documentation</a>.</p>
+          HTML
+
+          # Pages needs the custom domain in the artifact; the repository
+          # setting alone is not enough once a workflow publishes the site.
+          printf '%s\n' "${CUSTOM_DOMAIN}" > _site/CNAME
+
+          # Jekyll would otherwise strip Astro's _astro/ directory.
+          touch _site/.nojekyll
+
+      - name: Check the built site for broken internal links
+        run: node site/scripts/check-links.mjs "_site${SITE_BASE}"
+
+      - uses: actions/upload-pages-artifact@v4
+        with:
+          path: _site
+
+  deploy:
+    # Pull requests build and link-check, but only main publishes.
+    if: github.event_name != 'pull_request'
+    needs: build
+    runs-on: ubuntu-latest
+    timeout-minutes: 10
+    permissions:
+      pages: write
+      id-token: write
+    environment:
+      name: github-pages
+      url: ${{ steps.deployment.outputs.page_url }}
+    steps:
+      - id: deployment
+        uses: actions/deploy-pages@v4

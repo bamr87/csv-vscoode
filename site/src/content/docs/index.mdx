@@ -1,0 +1,174 @@
+---
+title: CSV Grid Editor
+description: A spreadsheet-style grid for CSV and TSV files inside VS Code. Edit cells with real undo and save, filter the way Excel does, query with SQL, chart a column, and turn repeated cleanup into re-runnable pipelines.
+template: splash
+editUrl: https://github.com/bamr87/csv-vscoode/edit/main/site/src/content/docs/index.mdx
+hero:
+  image:
+    alt: A CSV file open in the grid editor inside VS Code
+    file: ../../assets/hero-grid.png
+  tagline: A spreadsheet over the file itself — not a copy of it. Edit, filter, chart, query with SQL and re-run your cleanup as a pipeline, without leaving VS Code.
+  actions:
+    - text: Install from the Marketplace
+      link: https://marketplace.visualstudio.com/items?itemName=bash-365.csv-grid-viewer
+      icon: external
+      variant: primary
+    - text: Try the live demo
+      link: demo/
+      icon: right-arrow
+      variant: secondary
+    - text: Read the docs
+      link: guides/getting-started/
+      icon: open-book
+      variant: minimal
+---
+
+import { Card, CardGrid, LinkCard, Aside, Steps, Tabs, TabItem } from "@astrojs/starlight/components";
+
+<div class="not-content hero-badges">
+  <a href="https://marketplace.visualstudio.com/items?itemName=bash-365.csv-grid-viewer"><img src="https://vsmarketplacebadges.dev/version-short/bash-365.csv-grid-viewer.svg" alt="Marketplace version" /></a>
+  <a href="https://marketplace.visualstudio.com/items?itemName=bash-365.csv-grid-viewer"><img src="https://vsmarketplacebadges.dev/installs-short/bash-365.csv-grid-viewer.svg" alt="Marketplace installs" /></a>
+  <a href="https://open-vsx.org/extension/bash-365/csv-grid-viewer"><img src="https://img.shields.io/open-vsx/v/bash-365/csv-grid-viewer?color=0e7c6b&label=open%20vsx" alt="Open VSX version" /></a>
+  <a href="https://github.com/bamr87/csv-vscoode/actions/workflows/ci.yml"><img src="https://github.com/bamr87/csv-vscoode/actions/workflows/ci.yml/badge.svg" alt="CI status" /></a>
+  <a href="https://github.com/bamr87/csv-vscoode/blob/main/LICENSE"><img src="https://img.shields.io/badge/license-MIT-0e7c6b" alt="MIT licence" /></a>
+</div>
+
+<img src={`${import.meta.env.BASE_URL}media/demo.gif`} alt="Opening a CSV file in the grid, filtering a column, and running a SQL query" />
+
+## Why it exists
+
+CSV is the format everyone actually exchanges, and reading one in a text editor means counting commas. Opening it in a spreadsheet means leaving your editor — and often means the spreadsheet silently reformats your data on the way back out: dates rewritten, leading zeros dropped, long identifiers turned into scientific notation.
+
+This extension puts the grid **inside VS Code, on top of the file itself**. The text document stays the source of truth, so `Ctrl+S`, `Ctrl+Z`, the dirty indicator, file watching and Git all behave exactly as they do for any other file. Nothing is cached in a parallel model that can drift, and nothing reformats your data behind your back.
+
+<CardGrid>
+  <Card title="Nothing to configure" icon="approve-check">
+    Install it and open a `.csv`, `.tsv`, `.tab` or `.psv` file. The delimiter, the header row and every column type are detected, and all three can be overridden per file.
+  </Card>
+  <Card title="Nothing to upload" icon="padlock">
+    Every feature — parsing, statistics, charts, SQL, pipelines — runs locally inside VS Code. No service sees your data, and the extension works offline.
+  </Card>
+  <Card title="Nothing to unlearn" icon="star">
+    AutoFilter dropdowns, `Ctrl+F`, `Ctrl+D`, `Ctrl+R`, range selection with a live sum in the status bar. If you know the spreadsheet, you already know this.
+  </Card>
+  <Card title="Big files stay fast" icon="rocket">
+    Virtualised rendering keeps scrolling smooth past 100,000 rows, and editing, SQL and export operate on the whole file regardless of how much is on screen.
+  </Card>
+</CardGrid>
+
+## What it does
+
+<div class="feature-grid not-content">
+  <div class="feature-card">
+    <span class="eyebrow">Edit</span>
+    <h3>A real grid over a real file</h3>
+    <p>Double-click, <code>F2</code>, or just start typing. Insert, duplicate, move, delete and hide rows and columns. Split a column, merge several, transpose the table, fill down and right, trim, change case, drop duplicates. <code>Ctrl+S</code> saves the file; <code>Ctrl+Z</code> undoes into VS Code's own undo stack.</p>
+  </div>
+  <div class="feature-card">
+    <span class="eyebrow">Find</span>
+    <h3>Excel-style AutoFilter</h3>
+    <p>A searchable list of each column's distinct values with counts, tri-state <code>(Select All)</code> and <code>(Blanks)</code>, plus Text, Number and Date condition filters with wildcards. Value lists cascade from the other columns, so you never pick a combination that matches nothing.</p>
+  </div>
+  <div class="feature-card">
+    <span class="eyebrow">Understand</span>
+    <h3>Statistics and charts</h3>
+    <p>Per-column counts, distinct values, blanks, min, max, sum, mean, median, standard deviation, quartiles and top values. Histograms for numeric columns, top-value bars for everything else.</p>
+  </div>
+  <div class="feature-card">
+    <span class="eyebrow">Query</span>
+    <h3>Real SQL, in memory</h3>
+    <p>The file is loaded into an in-memory SQLite database named <code>csv</code>. Joins onto itself, window functions, aggregates — all of it. Results copy out or open as a new CSV.</p>
+  </div>
+  <div class="feature-card">
+    <span class="eyebrow">Repeat</span>
+    <h3>Pipelines</h3>
+    <p>Describe a cleanup once as a <code>.csvpipe.json</code> file and re-run it on demand, on open, or on save. Fifteen no-code steps, two low-code expression steps, and code steps that shell out to pandas, jq, awk, Miller or anything else you already have.</p>
+  </div>
+  <div class="feature-card">
+    <span class="eyebrow">Ship</span>
+    <h3>Export anywhere</h3>
+    <p>The whole file or just the selection, to JSON, Markdown, HTML, SQL inserts, or a different delimiter. Selections go straight to the clipboard in a form Excel understands.</p>
+  </div>
+</div>
+
+<LinkCard
+  title="Take the feature tour"
+  description="Every capability with the screenshot that shows it, in the order you would meet them."
+  href="features/"
+/>
+
+## Sixty seconds to useful
+
+<Steps>
+
+1. **Install the extension.**
+
+   From the Marketplace, or from a terminal:
+
+   <Tabs syncKey="install">
+     <TabItem label="VS Code">
+       ```bash
+       code --install-extension bash-365.csv-grid-viewer
+       ```
+     </TabItem>
+     <TabItem label="VSCodium / Open VSX">
+       ```bash
+       codium --install-extension bash-365.csv-grid-viewer
+       ```
+     </TabItem>
+     <TabItem label="From a .vsix">
+       ```bash
+       code --install-extension csv-grid-editor-1.0.0.vsix
+       ```
+     </TabItem>
+   </Tabs>
+
+2. **Open any delimited file.** That is the whole setup — the extension registers itself as the default editor for `.csv`, `.tsv`, `.tab` and `.psv`.
+
+3. **Select a range of numbers.** The status bar shows count, sum, average, minimum and maximum, exactly like the spreadsheet you came from.
+
+4. **Click the caret in a column header** (or press `Alt+Down`) for sorting and Excel-style filtering.
+
+5. **Open the SQL panel** and run `SELECT * FROM csv LIMIT 10`.
+
+</Steps>
+
+<Aside type="tip" title="Prefer the text editor for one file?">
+  Use **Open as text** in the editor title bar. To make plain text the default for every CSV, add `"workbench.editorAssociations": { "*.csv": "default" }` to your settings.
+</Aside>
+
+## For collaborators and contributors
+
+<CardGrid>
+  <LinkCard
+    title="Contributing"
+    description="Clone, build, run the Extension Development Host, and the conventions a pull request is held to."
+    href="contribute/contributing/"
+  />
+  <LinkCard
+    title="Architecture"
+    description="How the pure core, the extension host and the webview fit together — and where to add a feature."
+    href="contribute/contributing/#architecture"
+  />
+  <LinkCard
+    title="Releasing"
+    description="How a version is built, packaged, tagged and published to the Marketplace and Open VSX."
+    href="contribute/releasing/"
+  />
+  <LinkCard
+    title="Issues and discussions"
+    description="Report a bug, request a feature, or ask a question on GitHub."
+    href="https://github.com/bamr87/csv-vscoode/issues"
+  />
+</CardGrid>
+
+## Built with
+
+| Library | Role |
+| --- | --- |
+| [PapaParse](https://www.papaparse.com/) | RFC 4180 parsing and serialisation |
+| [Tabulator](https://tabulator.info/) | Virtualised grid, range selection, clipboard |
+| [sql.js](https://sql.js.org/) | SQLite compiled to WebAssembly |
+| [Chart.js](https://www.chartjs.org/) | Charts |
+
+Released under the [MIT licence](https://github.com/bamr87/csv-vscoode/blob/main/LICENSE). Requires VS Code 1.90 or later; everything else ships inside the extension.

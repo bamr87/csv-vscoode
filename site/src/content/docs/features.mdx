@@ -1,0 +1,200 @@
+---
+title: Feature tour
+description: Every capability of the CSV Grid Editor, with the screenshot that shows it — the grid, AutoFilter, find and replace, row and column surgery, statistics, charts, SQL, pipelines, export and the sidebar.
+editUrl: https://github.com/bamr87/csv-vscoode/edit/main/site/src/content/docs/features.mdx
+sidebar:
+  order: 4
+---
+
+import { Aside, CardGrid, LinkCard, Tabs, TabItem } from "@astrojs/starlight/components";
+
+This is the whole extension in the order you would meet it. Every screenshot is the real thing; nothing here is a mock-up. Each section links to the guide that covers it properly.
+
+## The grid
+
+<img src={`${import.meta.env.BASE_URL}media/screenshots/grid.png`} alt="A CSV file open in the grid editor, showing typed columns and the toolbar" />
+
+The grid is a custom editor sitting on top of the same text document VS Code already has open. That single design decision is what makes everything else behave:
+
+- **Save, undo, redo and the dirty dot are VS Code's own.** An edit in a cell is a text edit on the document. `Ctrl+Z` walks back through it, Git sees a normal diff, and an external change to the file on disk reloads the grid.
+- **Virtualised rendering** keeps scrolling smooth well past 100,000 rows.
+- **Delimiter detection** covers comma, tab, semicolon and pipe, with a per-file override in the toolbar.
+- **Column types** are inferred as integer, number, boolean, date or text. The type drives right-aligned numbers, numeric rather than lexical sorting, and which filter operators you are offered.
+- **Range selection** works like a spreadsheet, copies to and pastes from Excel, and puts count, sum, average, minimum and maximum in the status bar.
+
+<LinkCard title="The grid editor" description="Editing, saving, large files, and everything the toolbar does." href="../guides/grid-editor/" />
+
+## Excel-style AutoFilter
+
+<img src={`${import.meta.env.BASE_URL}media/screenshots/autofilter.png`} alt="The AutoFilter dropdown open on a column, showing a searchable value list with counts" />
+
+Click the caret in any column header, or press `Alt+Down`. You get the dropdown you already know:
+
+- A **searchable list of distinct values** with row counts, tri-state `(Select All)` and an explicit `(Blanks)` entry.
+- **Condition filters** appropriate to the column's type — contains, begins with, greater than, between, before, is empty — two at a time, joined by And or Or, with `*` and `?` wildcards.
+- **Cascading value lists.** The values on offer reflect the filters already applied to *other* columns, so you can never pick a combination that matches zero rows.
+- Sorting, and a one-click clear per column.
+
+<img src={`${import.meta.env.BASE_URL}media/screenshots/filtered.png`} alt="The grid with several columns filtered, showing filter indicators in the headers" />
+
+<LinkCard title="Filtering, search and sort" description="Every operator, how cascading works, and multi-level sort." href="../guides/filtering-and-search/" />
+
+## Find, replace and sort
+
+<img src={`${import.meta.env.BASE_URL}media/screenshots/find-replace.png`} alt="The find and replace bar over the grid with matches highlighted" />
+
+`Ctrl+F` opens find and replace over cells rather than over text: match case, whole cell and regular expression modes, live highlighting of every match, next and previous, and a replace-all that lands as **one** undo step.
+
+<img src={`${import.meta.env.BASE_URL}media/screenshots/sort-dialog.png`} alt="The sort dialog with three sort levels configured" />
+
+The Sort dialog does up to three levels and asks the question that matters: sort the *view*, or write the new row order to the *file*.
+
+## Row and column surgery
+
+<Tabs>
+  <TabItem label="Cell menu">
+    <img src={`${import.meta.env.BASE_URL}media/screenshots/cell-menu.png`} alt="The right-click menu on a cell, showing row and column operations" />
+  </TabItem>
+  <TabItem label="Column menu">
+    <img src={`${import.meta.env.BASE_URL}media/screenshots/column-menu.png`} alt="The column menu, showing insert, split, merge and hide operations" />
+  </TabItem>
+</Tabs>
+
+Insert, duplicate, move, delete and hide — for rows and columns, on a single item or a whole selection. Beyond that, the operations you would otherwise open a spreadsheet for:
+
+<div class="feature-grid not-content">
+  <div class="feature-card">
+    <h3>Reshape</h3>
+    <p>Split one column into several on a delimiter or a width. Merge several into one with a separator. Transpose the entire table.</p>
+  </div>
+  <div class="feature-card">
+    <h3>Clean</h3>
+    <p>Remove empty rows, remove duplicate rows, trim whitespace, change case, and normalize rows whose field count does not match the header.</p>
+  </div>
+  <div class="feature-card">
+    <h3>Fill</h3>
+    <p>Fill down with <code>Ctrl+D</code> and right with <code>Ctrl+R</code>, or fill a series — numbers, dates, or a repeating pattern.</p>
+  </div>
+</div>
+
+## Statistics
+
+<img src={`${import.meta.env.BASE_URL}media/screenshots/statistics.png`} alt="The statistics panel showing counts, quartiles and top values for a column" />
+
+Per column: count, distinct, blanks, minimum, maximum, shortest and longest value, and the most frequent values with their counts. For numeric columns it adds sum, mean, median, standard deviation and quartiles.
+
+This is usually the fastest way to answer *what is actually in this file* — before you write a single query.
+
+## Charts
+
+<img src={`${import.meta.env.BASE_URL}media/screenshots/chart.png`} alt="The chart panel showing a histogram of a numeric column" />
+
+A histogram for numeric columns, a top-values bar chart for everything else. One click from the statistics panel, drawn with Chart.js inside the editor.
+
+<LinkCard title="Analysis" description="Statistics, charts and SQL in detail." href="../guides/analysis/" />
+
+## SQL
+
+<img src={`${import.meta.env.BASE_URL}media/screenshots/sql.png`} alt="The SQL panel with a query and its result set" />
+
+The SQL panel loads the file into an in-memory SQLite database — real SQLite, compiled to WebAssembly — as a table named `csv`. That means joins onto itself, window functions, CTEs, `GROUP BY`, the lot:
+
+```sql
+SELECT category,
+       COUNT(*)        AS products,
+       ROUND(AVG(price), 2) AS avg_price,
+       SUM(qty)        AS units
+FROM csv
+WHERE in_stock = 'true'
+GROUP BY category
+ORDER BY units DESC;
+```
+
+Results copy to the clipboard or open as a new CSV in their own grid.
+
+<Aside type="note">
+  Nothing leaves your machine. The database is created in memory from the file you have open and discarded when you close the panel.
+</Aside>
+
+## Pipelines
+
+<img src={`${import.meta.env.BASE_URL}media/screenshots/pipeline.png`} alt="The pipeline builder panel with a list of steps and a live preview" />
+
+The same cleanup usually happens more than once. Describe it once as a `*.csvpipe.json` file, then run it on demand, when the file opens, or when it is saved.
+
+| Tier | Steps |
+| --- | --- |
+| **No-code** | trim, change case, fill empty, find and replace, rename, select, drop, sort, dedupe, limit, split column, merge columns, transpose, remove empty rows, random sample |
+| **Low-code** | `filter` and `compute` — one-line expressions where columns are variables and 38 helper functions are in scope |
+| **Code** | inline JavaScript, a workspace script file, a SQLite query, or any external command over stdin and stdout |
+
+```json
+{
+  "name": "Clean sales export",
+  "applyTo": ["data/sales-*.csv"],
+  "trigger": "onSave",
+  "output": { "target": "file", "format": "json", "path": "out/${name}-summary.json" },
+  "steps": [
+    { "kind": "trim" },
+    { "kind": "filter", "expression": "in_stock && units_sold > 0" },
+    { "kind": "compute", "column": "margin", "expression": "round(revenue * 0.18, 2)" },
+    { "kind": "sql", "query": "SELECT category, SUM(revenue) AS revenue FROM csv GROUP BY category" }
+  ]
+}
+```
+
+Because a `command` step simply pipes the table through your shell, anything already installed works: pandas, R, jq, awk, csvkit, Miller, qsv.
+
+<Aside type="caution" title="Trust matters here">
+  Steps that evaluate code — `expression`, `js`, `script`, `sql`, `command` — never run in an untrusted workspace, and can be switched off entirely with `csv.pipelines.allowScripts`.
+</Aside>
+
+<CardGrid>
+  <LinkCard title="Pipelines guide" description="Writing, running and triggering pipelines, with the expression helper reference." href="../guides/pipelines/" />
+  <LinkCard title="Pipeline schema" description="Every field and every step kind, generated from the schema the extension validates against." href="../reference/pipeline-schema/" />
+</CardGrid>
+
+## Export
+
+The whole file, or just the selection, to:
+
+- **JSON** — an array of objects keyed by header
+- **Markdown** — a pipe table you can paste into a README
+- **HTML** — a standalone table
+- **SQL** — `CREATE TABLE` plus `INSERT` statements
+- **Another delimiter** — CSV to TSV, TSV to pipe-delimited, and so on
+
+Selections can go straight to the clipboard in a form Excel and Google Sheets both understand.
+
+## The sidebar
+
+The CSV icon in the activity bar opens three views.
+
+<div class="feature-grid not-content">
+  <div class="feature-card">
+    <span class="eyebrow">Settings</span>
+    <h3>Every option, in place</h3>
+    <p>Grouped, showing its current value, editable with a toggle for booleans, a picker for choices and a validated prompt for numbers. It also surfaces the per-file header and delimiter overrides, which are otherwise invisible once set from the toolbar. A control in the view title chooses whether edits go to User or Workspace settings.</p>
+  </div>
+  <div class="feature-card">
+    <span class="eyebrow">Pipelines</span>
+    <h3>Everything runnable, ranked</h3>
+    <p>Workspace pipelines with the ones matching the current file first. Run or edit either one in a single click.</p>
+  </div>
+  <div class="feature-card">
+    <span class="eyebrow">Files</span>
+    <h3>Every delimited file</h3>
+    <p>Every <code>.csv</code>, <code>.tsv</code>, <code>.tab</code> and <code>.psv</code> in the workspace, opening straight into the grid or into the text editor.</p>
+  </div>
+</div>
+
+## Text mode
+
+Not everything wants a grid. **Open as text** puts you back in the plain editor, where the extension still helps:
+
+- Each column gets its own colour, via semantic highlighting that respects your theme.
+- Hovering a cell names its column and position.
+- The status bar tracks the column under the cursor.
+- Rows whose field count differs from the header are reported in the Problems panel.
+
+<LinkCard title="Try all of it in your browser" description="A live grid running the extension's own parsing, type inference and statistics code — no install required." href="../demo/" />

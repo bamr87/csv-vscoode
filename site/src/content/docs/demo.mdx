@@ -1,0 +1,50 @@
+---
+title: Live demo
+description: A working CSV grid in your browser, running the extension's own parser, type inference and statistics code — with Excel-style filtering, editable cells, live statistics, charts and real SQLite.
+editUrl: https://github.com/bamr87/csv-vscoode/edit/main/site/src/content/docs/demo.mdx
+sidebar:
+  order: 3
+# The grid wants the horizontal space the table of contents would take, and the
+# page has three headings.
+tableOfContents: false
+---
+
+import { Aside, LinkCard } from "@astrojs/starlight/components";
+import CsvDemo from "../../components/CsvDemo.astro";
+
+Everything below runs in your browser. It is not a video and it is not a mock-up: the parser, the delimiter detection, the column type inference and the statistics are the **same modules the extension loads inside VS Code**, imported straight out of `src/core`.
+
+<CsvDemo />
+
+## What to try
+
+- **Click a column header** to sort. Numeric columns sort numerically, because the type was inferred rather than guessed from the first row.
+- **Type in the filter box** under any header. In VS Code this is a full Excel-style AutoFilter dropdown with value lists and condition builders; here it is the plain text filter Tabulator gives you.
+- **Drag across a block of numbers.** The bar under the grid fills in count, sum, average, minimum and maximum — the same summary the extension puts in the VS Code status bar.
+- **Double-click a cell and change it.** The statistics and the chart update, because the edit goes back into the same table object they read from. In VS Code the edit also becomes a text edit on the document, so `Ctrl+Z` and `Ctrl+S` work on it.
+- **Switch the delimiter to Auto and load `cities.tsv`.** Detection picks tab without being told.
+- **Untick "Header row"** to see what a headerless file looks like.
+- **Run the SQL query.** Change it. `SELECT * FROM csv WHERE units_sold > 1000 ORDER BY revenue DESC` is a good second one.
+- **Open a file of your own** with the file picker. It is read with the browser's `File` API and never uploaded — this site has no server to upload it to.
+
+<Aside type="note" title="What the demo leaves out">
+  This page is a taste, not the product. The real extension adds the Excel-style AutoFilter dropdown with cascading value lists, find and replace across cells, multi-level sort, the full set of row and column operations, export, the pipeline builder, the sidebar views, text mode with rainbow columns, and — most importantly — editing that saves to the file you actually have open.
+</Aside>
+
+## The same code, three places
+
+`src/core/` in the repository is deliberately pure TypeScript: no `vscode` import, no DOM. That constraint is what lets one implementation serve all three environments.
+
+| Environment | What it runs |
+| --- | --- |
+| **The extension host** | Parsing, serialisation, edits, pipelines, SQL loading |
+| **The webview** | The grid, filters, statistics, charts — the bundle inside VS Code |
+| **This page, and the test suite** | The same modules again, in a browser and under Vitest |
+
+If a number on this page is wrong, the same number is wrong in the extension — which is a rather good reason to keep the demo honest.
+
+<LinkCard
+  title="Install the extension"
+  description="Open your own files in the real thing, with editing, export and pipelines."
+  href="https://marketplace.visualstudio.com/items?itemName=bash-365.csv-grid-viewer"
+/>

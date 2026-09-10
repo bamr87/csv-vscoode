@@ -12,6 +12,7 @@ scripts/**
 samples/**
 tools/**
 docs/**
+site/**
 node_modules/**
 .playwright-mcp/**
 
