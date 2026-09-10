@@ -1,0 +1,111 @@
+---
+title: The documentation site
+description: How this site is built, where each page comes from, how to run it locally, and how it is deployed to apps.bash-365.com/csv-vscode.
+editUrl: https://github.com/bamr87/csv-vscoode/edit/main/site/src/content/docs/contribute/documentation.mdx
+sidebar:
+  order: 2
+---
+
+import { Aside, FileTree, Steps } from "@astrojs/starlight/components";
+
+This site lives in [`site/`](https://github.com/bamr87/csv-vscoode/tree/main/site) in the extension's own repository. It is [Astro](https://astro.build/) with [Starlight](https://starlight.astro.build/), a static build with no server and no database, published to GitHub Pages at `apps.bash-365.com/csv-vscode`.
+
+## Run it locally
+
+<Steps>
+
+1. Install the site's dependencies. They are separate from the extension's, so the extension's build and its VSIX are untouched by anything here.
+
+   ```bash
+   cd site
+   npm install
+   ```
+
+2. Start the dev server.
+
+   ```bash
+   npm run dev
+   ```
+
+   It serves at `http://localhost:4321/csv-vscode/` — note the base path, which matches production. Set `SITE_BASE=/` to serve from the root instead.
+
+3. Build exactly what CI builds.
+
+   ```bash
+   npm run build && npm run preview
+   ```
+
+</Steps>
+
+<Aside type="caution" title="Node 22">
+  The site needs Node 22.12 or newer, because Astro 7 does. The extension itself still builds and tests on Node 20 — the two toolchains are deliberately independent, and the site has its own workflow.
+</Aside>
+
+## Where each page comes from
+
+Most of what you read here is **not written in `site/`**. The repository's own markdown is the source of truth, and `site/scripts/sync-docs.mjs` generates a Starlight page from each file at build time. That is why the guides say the same thing on GitHub and on this site: they *are* the same file.
+
+| This page | Comes from |
+| --- | --- |
+| Getting started, grid editor, filtering, analysis, pipelines | `docs/*.md` |
+| Settings, keyboard shortcuts, troubleshooting, feature parity | `docs/*.md` |
+| Changelog | `CHANGELOG.md` |
+| Contributing | `CONTRIBUTING.md` |
+| Releasing | `docs/RELEASING.md` |
+| **Commands** | `package.json` → `contributes.commands` |
+| **Pipeline schema** | `schemas/csvpipe.schema.json` |
+| Overview, feature tour, live demo, this page | Authored in `site/src/content/docs/` |
+
+The two bold rows are generated from machine-readable sources rather than from prose, so the command list and the pipeline reference cannot drift from what the extension actually contributes. Add a command to `package.json` and it appears here on the next build.
+
+<Aside type="tip" title="Editing a guide">
+  Every generated page carries an **Edit page** link that points at its *source* file, not at the generated copy. Follow it and you will land in `docs/` or `CONTRIBUTING.md`, which is where the change belongs. The generated copies under `site/src/content/docs/guides/` and `site/src/content/docs/reference/` are git-ignored; editing one is work that the next build throws away.
+</Aside>
+
+## Layout
+
+<FileTree>
+
+- site/
+  - astro.config.mjs   site URL, base path, sidebar
+  - package.json       its own dependencies, separate from the extension's
+  - scripts/
+    - sync-docs.mjs    generates pages from docs/, package.json and the schema
+  - src/
+    - content/
+      - docs/
+        - index.mdx        the landing page
+        - features.mdx     the feature tour
+        - demo.mdx         the live demo
+        - contribute/
+          - documentation.mdx
+        - guides/          **generated**
+        - reference/       **partly generated**
+    - components/
+      - CsvDemo.astro      the demo widget's markup
+    - scripts/
+      - demo.ts            the demo's behaviour
+    - styles/
+      - custom.css         the teal Starlight theme
+  - public/            favicon, and the media and samples copied in by sync
+
+</FileTree>
+
+## The live demo
+
+[The demo page](../../demo/) imports `src/core/parse.ts`, `src/core/infer.ts` and `src/core/stats.ts` **from the extension** — the relative import climbs out of `site/` into the repository root. That is only possible because `src/core/` is pure TypeScript with no `vscode` and no DOM dependency, which is a rule worth protecting: break it and the demo stops building, which is a useful early warning that the core has picked up a host dependency it should not have.
+
+If you add a capability to the core, consider surfacing it in the demo. It is the cheapest way to let someone evaluate the extension before installing it.
+
+## Writing conventions
+
+- **One paragraph per line.** The repository's `markdown-oneline` workflow enforces this on `*.md` and repairs pull requests automatically. `.mdx` files are not machine-checked, so keep the rule by hand.
+- **Screenshots live in `media/screenshots/`** in the repository root and are copied into the site by `sync-docs.mjs`. Reference them from `.mdx` with `` `${import.meta.env.BASE_URL}media/screenshots/name.png` `` so they survive a change of base path.
+- **Internal links in authored pages are relative** (`guides/getting-started/`, `../../demo/`) for the same reason. Absolute paths would bake `/csv-vscode` into the page.
+- **British spelling**, matching the extension's own copy.
+
+## Deployment
+
+A push to `main` that touches `site/`, `docs/`, `README.md`, `CHANGELOG.md`, `CONTRIBUTING.md`, `package.json` or `schemas/` runs [`.github/workflows/docs.yml`](https://github.com/bamr87/csv-vscoode/blob/main/.github/workflows/docs.yml), which builds the site and deploys it to GitHub Pages. Pull requests build the site too, but do not deploy — so a broken link or a failed build is caught before it merges.
+
+The deployment lays the built site out under a `csv-vscode/` directory and adds a root redirect, which is what produces the `apps.bash-365.com/csv-vscode` URL. Both halves are configurable: `SITE_URL` and `SITE_BASE` in the workflow environment change where the site thinks it lives, without touching a single page.

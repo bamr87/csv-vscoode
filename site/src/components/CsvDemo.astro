@@ -1,0 +1,88 @@
+---
+/**
+ * The live demo widget. All of the behaviour lives in ../scripts/demo.ts,
+ * which imports the extension's own src/core modules; this file is the markup
+ * it binds to.
+ */
+---
+
+<div class="demo not-content" id="demo-root">
+  <div class="demo-toolbar">
+    <label>
+      Sample
+      <select id="demo-sample" aria-label="Sample file"></select>
+    </label>
+    <label>
+      Delimiter
+      <select id="demo-delimiter" aria-label="Delimiter">
+        <option value="auto">Auto</option>
+        <option value=",">Comma</option>
+        <option value="&#9;">Tab</option>
+        <option value=";">Semicolon</option>
+        <option value="|">Pipe</option>
+      </select>
+    </label>
+    <label>
+      <input type="checkbox" id="demo-header" checked />
+      Header row
+    </label>
+    <span class="spacer"></span>
+    <label>
+      <input type="file" id="demo-file" accept=".csv,.tsv,.tab,.psv,text/csv,text/plain" aria-label="Open a file of your own" />
+    </label>
+  </div>
+
+  <div class="demo-grid" id="demo-grid"></div>
+
+  <div class="demo-status">
+    <span id="demo-summary">Loading…</span>
+  </div>
+  <div class="demo-status">
+    <span id="demo-selection">Select a range of cells for a live summary</span>
+    <span id="demo-detected" class="demo-hint"></span>
+  </div>
+</div>
+
+<div class="demo-panels not-content">
+  <div class="demo-panel">
+    <h3>Statistics</h3>
+    <p class="demo-hint">
+      Computed by <code>computeColumnStats</code> — the extension's own function, running here in your browser.
+    </p>
+    <label>
+      Column
+      <select id="demo-stats-column" aria-label="Column to describe"></select>
+    </label>
+    <div class="demo-out" id="demo-stats-table"></div>
+    <div class="demo-out" id="demo-top-values"></div>
+    <div style="height: 14rem; margin-top: 0.75rem;">
+      <canvas id="demo-chart" aria-label="Column distribution chart" role="img"></canvas>
+    </div>
+  </div>
+
+  <div class="demo-panel">
+    <h3>SQL</h3>
+    <p class="demo-hint">
+      Real SQLite, compiled to WebAssembly. The file above is the table <code>csv</code>. The WebAssembly binary
+      downloads the first time you run a query.
+    </p>
+    <textarea id="demo-sql-input" spellcheck="false" aria-label="SQL query"></textarea>
+    <p><button id="demo-run-sql" type="button">Run query</button></p>
+    <div class="demo-out" id="demo-sql-output"></div>
+  </div>
+</div>
+
+<style is:global>
+  /* A data grid needs more room than a prose column. This widens the content
+     pane on the one page that embeds the demo, and nowhere else. */
+  :root:has(#demo-root) {
+    --sl-content-width: 62rem;
+  }
+</style>
+
+<script>
+  import "tabulator-tables/dist/css/tabulator.min.css";
+  import { mountDemo } from "../scripts/demo";
+
+  mountDemo();
+</script>

@@ -16,7 +16,7 @@
     "type": "git",
     "url": "https://github.com/bamr87/csv-vscoode.git"
   },
-  "homepage": "https://github.com/bamr87/csv-vscoode#readme",
+  "homepage": "https://apps.bash-365.com/csv-vscode/",
   "bugs": {
     "url": "https://github.com/bamr87/csv-vscoode/issues"
   },
@@ -690,7 +690,10 @@
     "publish:login": "npx @vscode/vsce login",
     "publish:extension": "node ./scripts/publish.mjs",
     "publish:openvsx": "node ./scripts/publish.mjs --openvsx-only",
-    "publish:check": "node ./scripts/publish.mjs --dry-run"
+    "publish:check": "node ./scripts/publish.mjs --dry-run",
+    "docs:dev": "npm --prefix site run dev",
+    "docs:build": "npm --prefix site run build",
+    "docs:install": "npm --prefix site install"
   },
   "dependencies": {
     "chart.js": "^4.5.1",

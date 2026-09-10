@@ -1,0 +1,286 @@
+/*
+ * Palette taken from the extension's own icon: #0A2429 ground, #4FC3B2 accent.
+ * Starlight derives most of its surfaces from --sl-color-accent and the grey
+ * ramp, so overriding those two families is enough to re-skin the whole site.
+ */
+:root {
+  --sl-color-accent-low: #10312f;
+  --sl-color-accent: #1f8f7e;
+  --sl-color-accent-high: #a9e6da;
+
+  --sl-color-white: #ffffff;
+  --sl-color-gray-1: #e9f0ef;
+  --sl-color-gray-2: #c2ceccff;
+  --sl-color-gray-3: #8ba09d;
+  --sl-color-gray-4: #566966;
+  --sl-color-gray-5: #364a48;
+  --sl-color-gray-6: #24393a;
+  --sl-color-black: #0a2429;
+
+  --csv-teal: #4fc3b2;
+  --csv-deep: #0a2429;
+}
+
+:root[data-theme="light"] {
+  --sl-color-accent-low: #c6ece3;
+  --sl-color-accent: #0e7c6b;
+  --sl-color-accent-high: #0a3a35;
+
+  --sl-color-white: #0a2429;
+  --sl-color-gray-1: #16302f;
+  --sl-color-gray-2: #26403e;
+  --sl-color-gray-3: #566966;
+  --sl-color-gray-4: #7f918e;
+  --sl-color-gray-5: #c6d1cf;
+  --sl-color-gray-6: #e7eeed;
+  --sl-color-gray-7: #f3f7f6;
+  --sl-color-black: #ffffff;
+}
+
+/* ---------------------------------------------------------------- landing */
+
+.hero-badges {
+  display: flex;
+  flex-wrap: wrap;
+  gap: 0.5rem;
+  margin-top: 1.5rem;
+}
+
+.hero-badges img {
+  height: 20px;
+}
+
+/* Screenshots read as artefacts, not as page furniture. */
+.sl-markdown-content img:not(.not-content img) {
+  border: 1px solid var(--sl-color-gray-5);
+  border-radius: 0.5rem;
+  box-shadow: 0 1px 3px rgb(0 0 0 / 0.18);
+}
+
+/* ------------------------------------------------------------- feature grid */
+
+.feature-grid {
+  display: grid;
+  grid-template-columns: repeat(auto-fit, minmax(min(100%, 17rem), 1fr));
+  gap: 1rem;
+  margin-block: 1.5rem;
+}
+
+.feature-card {
+  border: 1px solid var(--sl-color-gray-5);
+  border-radius: 0.6rem;
+  padding: 1rem 1.1rem;
+  background: var(--sl-color-black);
+}
+
+.feature-card h3 {
+  margin-top: 0;
+  font-size: var(--sl-text-lg);
+}
+
+.feature-card p:last-child {
+  margin-bottom: 0;
+}
+
+.feature-card .eyebrow {
+  display: inline-block;
+  font-size: var(--sl-text-xs);
+  letter-spacing: 0.08em;
+  text-transform: uppercase;
+  color: var(--sl-color-accent-high);
+  margin-bottom: 0.35rem;
+}
+
+/* -------------------------------------------------------------- live demo */
+
+.demo {
+  --demo-border: var(--sl-color-gray-5);
+  border: 1px solid var(--demo-border);
+  border-radius: 0.6rem;
+  overflow: hidden;
+  margin-block: 1.5rem;
+  background: var(--sl-color-black);
+}
+
+.demo-toolbar {
+  display: flex;
+  flex-wrap: wrap;
+  align-items: center;
+  gap: 0.5rem;
+  padding: 0.55rem 0.7rem;
+  border-bottom: 1px solid var(--demo-border);
+  background: var(--sl-color-gray-6);
+  font-size: var(--sl-text-sm);
+}
+
+.demo-toolbar label {
+  display: inline-flex;
+  align-items: center;
+  gap: 0.35rem;
+}
+
+.demo-toolbar select,
+.demo-toolbar button,
+.demo-panel select,
+.demo-panel button {
+  font: inherit;
+  font-size: var(--sl-text-sm);
+  color: var(--sl-color-white);
+  background: var(--sl-color-black);
+  border: 1px solid var(--demo-border);
+  border-radius: 0.3rem;
+  padding: 0.2rem 0.5rem;
+  cursor: pointer;
+}
+
+.demo-toolbar button[aria-pressed="true"] {
+  background: var(--sl-color-accent-low);
+  border-color: var(--sl-color-accent);
+}
+
+.demo-toolbar .spacer {
+  flex: 1 1 auto;
+}
+
+/* The height itself is set by Tabulator (see demo.ts) so it can size its own
+   virtual scroller; this is only the floor before the grid has initialised. */
+.demo-grid {
+  min-height: 20rem;
+}
+
+.demo-status {
+  display: flex;
+  flex-wrap: wrap;
+  gap: 1rem;
+  padding: 0.45rem 0.7rem;
+  border-top: 1px solid var(--demo-border);
+  background: var(--sl-color-gray-6);
+  font-size: var(--sl-text-xs);
+  font-variant-numeric: tabular-nums;
+  color: var(--sl-color-gray-2);
+}
+
+.demo-status strong {
+  color: var(--sl-color-white);
+  font-weight: 600;
+}
+
+.demo-panels {
+  display: grid;
+  grid-template-columns: repeat(auto-fit, minmax(min(100%, 20rem), 1fr));
+  gap: 1rem;
+  margin-block: 1.5rem;
+}
+
+.demo-panel {
+  border: 1px solid var(--sl-color-gray-5);
+  border-radius: 0.6rem;
+  padding: 0.9rem 1rem;
+  background: var(--sl-color-black);
+  min-width: 0;
+}
+
+.demo-panel h3 {
+  margin-top: 0;
+  font-size: var(--sl-text-base);
+}
+
+.demo-panel textarea {
+  width: 100%;
+  min-height: 6rem;
+  font-family: var(--sl-font-mono, ui-monospace, monospace);
+  font-size: var(--sl-text-sm);
+  color: var(--sl-color-white);
+  background: var(--sl-color-gray-6);
+  border: 1px solid var(--sl-color-gray-5);
+  border-radius: 0.3rem;
+  padding: 0.5rem;
+  resize: vertical;
+}
+
+.demo-out {
+  overflow-x: auto;
+  max-height: 18rem;
+  overflow-y: auto;
+}
+
+.demo-out table {
+  width: 100%;
+  font-size: var(--sl-text-xs);
+  border-collapse: collapse;
+}
+
+.demo-out th,
+.demo-out td {
+  padding: 0.2rem 0.45rem;
+  border-bottom: 1px solid var(--sl-color-gray-5);
+  text-align: left;
+  white-space: nowrap;
+}
+
+.demo-error {
+  color: #ff8f8f;
+  font-size: var(--sl-text-sm);
+  white-space: pre-wrap;
+}
+
+.demo-hint {
+  font-size: var(--sl-text-xs);
+  color: var(--sl-color-gray-3);
+}
+
+/* ----------------------------------------------- Tabulator, themed to match */
+
+.demo .tabulator {
+  background: var(--sl-color-black);
+  border: none;
+  font-size: var(--sl-text-sm);
+}
+
+.demo .tabulator .tabulator-header {
+  background: var(--sl-color-gray-6);
+  border-bottom: 1px solid var(--demo-border);
+  color: var(--sl-color-white);
+}
+
+.demo .tabulator .tabulator-header .tabulator-col {
+  background: transparent;
+  border-right: 1px solid var(--demo-border);
+}
+
+.demo .tabulator .tabulator-row {
+  background: var(--sl-color-black);
+  color: var(--sl-color-white);
+  border-bottom: 1px solid var(--sl-color-gray-6);
+}
+
+.demo .tabulator .tabulator-row.tabulator-row-even {
+  background: var(--sl-color-gray-7, var(--sl-color-gray-6));
+}
+
+.demo .tabulator .tabulator-row.tabulator-selected,
+.demo .tabulator .tabulator-cell.tabulator-range-selected:not(.tabulator-range-only-cell-selected) {
+  background: var(--sl-color-accent-low) !important;
+}
+
+.demo .tabulator .tabulator-cell {
+  border-right: 1px solid var(--sl-color-gray-6);
+}
+
+.demo .tabulator .tabulator-cell.numeric {
+  text-align: right;
+  font-variant-numeric: tabular-nums;
+}
+
+.demo .tabulator .tabulator-header-filter input {
+  color: var(--sl-color-white);
+  background: var(--sl-color-black);
+  border: 1px solid var(--sl-color-gray-5);
+  border-radius: 0.2rem;
+}
+
+/* Starlight's splash hero reserves 126px above and below at this width, which
+   leaves a lot of empty ground between the call to action and the page. */
+.hero {
+  padding-block: clamp(2rem, calc(0.5rem + 6vmin), 5.5rem);
+}

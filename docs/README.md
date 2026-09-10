@@ -2,6 +2,8 @@
 
 Everything the extension can do, grouped by task. Start with [Getting started](getting-started.md) if this is your first time.
 
+These files are also the source of the published documentation site at **[apps.bash-365.com/csv-vscode](https://apps.bash-365.com/csv-vscode/)**, which adds a searchable index, a feature tour and a [live in-browser demo](https://apps.bash-365.com/csv-vscode/demo/). Edit the markdown here; the site regenerates from it on every push to `main`. The site itself lives in [`site/`](../site/).
+
 ## Guides
 
 | Guide | What it covers |
@@ -22,6 +24,7 @@ Everything the extension can do, grouped by task. Start with [Getting started](g
 | [Troubleshooting](troubleshooting.md) | Common problems and their fixes |
 | [Releasing](RELEASING.md) | How a new version is built, packaged and published |
 | [Contributing](../CONTRIBUTING.md) | Development setup, architecture, and how to add a feature |
+| [The documentation site](../site/README.md) | How the site is built, which pages are generated, and how to run it |
 
 ## The short version
 

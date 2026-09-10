@@ -2,7 +2,7 @@
 
 Open CSV, TSV and other delimited files in a spreadsheet-style grid inside VS Code. Edit cells with real undo and save, filter columns the way Excel does, query the file with SQL, and turn repeated cleanup into pipelines you can re-run.
 
-[![Marketplace](https://img.shields.io/visual-studio-marketplace/v/bash-365.csv-grid-viewer?label=marketplace&color=0e7c6b)](https://marketplace.visualstudio.com/items?itemName=bash-365.csv-grid-viewer) [![Installs](https://img.shields.io/visual-studio-marketplace/i/bash-365.csv-grid-viewer?color=0e7c6b)](https://marketplace.visualstudio.com/items?itemName=bash-365.csv-grid-viewer) [![CI](https://github.com/bamr87/csv-vscoode/actions/workflows/ci.yml/badge.svg)](https://github.com/bamr87/csv-vscoode/actions/workflows/ci.yml) [![License](https://img.shields.io/badge/license-MIT-0e7c6b)](LICENSE)
+[![Marketplace](https://vsmarketplacebadges.dev/version-short/bash-365.csv-grid-viewer.svg)](https://marketplace.visualstudio.com/items?itemName=bash-365.csv-grid-viewer) [![Installs](https://vsmarketplacebadges.dev/installs-short/bash-365.csv-grid-viewer.svg)](https://marketplace.visualstudio.com/items?itemName=bash-365.csv-grid-viewer) [![Open VSX](https://img.shields.io/open-vsx/v/bash-365/csv-grid-viewer?color=0e7c6b&label=open%20vsx)](https://open-vsx.org/extension/bash-365/csv-grid-viewer) [![Docs](https://img.shields.io/badge/docs-apps.bash--365.com-0e7c6b)](https://apps.bash-365.com/csv-vscode/) [![CI](https://github.com/bamr87/csv-vscoode/actions/workflows/ci.yml/badge.svg)](https://github.com/bamr87/csv-vscoode/actions/workflows/ci.yml) [![License](https://img.shields.io/badge/license-MIT-0e7c6b)](LICENSE)
 
 ![CSV Grid Editor in action](https://raw.githubusercontent.com/bamr87/csv-vscoode/main/media/demo.gif)
 
@@ -116,6 +116,10 @@ To go back to the plain text editor for one file, use **Open as text** in the ed
 
 ## Documentation
 
+Full documentation, a feature tour and a live in-browser demo: **[apps.bash-365.com/csv-vscode](https://apps.bash-365.com/csv-vscode/)**.
+
+The same guides are readable here in the repository:
+
 | Guide | Covers |
 | --- | --- |
 | [Getting started](docs/getting-started.md) | Installing, opening files, grid and text mode |
@@ -127,6 +131,7 @@ To go back to the plain text editor for one file, use **Open as text** in the ed
 | [Settings](docs/settings.md) | Every configuration option |
 | [Troubleshooting](docs/troubleshooting.md) | Common problems |
 | [Feature parity](docs/FEATURE-PARITY.md) | Comparison with Excel and other CSV tools |
+| [Live demo](https://apps.bash-365.com/csv-vscode/demo/) | A working grid in your browser, no install needed |
 
 ## Commands
 
@@ -184,6 +189,8 @@ VS Code 1.90 or later. No other dependencies; everything ships in the extension.
 ## Contributing
 
 Development setup, architecture and conventions are in [CONTRIBUTING.md](CONTRIBUTING.md). Issues and pull requests are welcome at https://github.com/bamr87/csv-vscoode.
+
+The documentation site lives in [`site/`](site/) and is published from `main` to [apps.bash-365.com/csv-vscode](https://apps.bash-365.com/csv-vscode/). Its guides are generated from the markdown in `docs/`, so a documentation change belongs there, not in the site.
 
 ## License
 

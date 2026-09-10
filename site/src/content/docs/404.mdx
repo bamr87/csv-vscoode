@@ -1,0 +1,24 @@
+---
+title: Page not found
+description: That page does not exist here. The documentation index, the feature tour and the live demo are all one click away.
+template: splash
+editUrl: false
+hero:
+  tagline: That page is not here. It may have moved, or the link may have been written before the page was renamed.
+---
+
+import { LinkCard, CardGrid } from "@astrojs/starlight/components";
+
+{/* A 404 is served from arbitrary URLs, so every link on it has to be absolute
+    rather than relative. BASE_URL keeps that correct under any base path. */}
+
+<CardGrid>
+  <LinkCard title="Documentation home" description="The overview, and where everything starts." href={import.meta.env.BASE_URL} />
+  <LinkCard title="Getting started" description="Install the extension and open your first file." href={`${import.meta.env.BASE_URL}guides/getting-started/`} />
+  <LinkCard title="Feature tour" description="Everything the extension does, with the screenshot that shows it." href={`${import.meta.env.BASE_URL}features/`} />
+  <LinkCard title="Live demo" description="A working CSV grid in your browser, no install required." href={`${import.meta.env.BASE_URL}demo/`} />
+</CardGrid>
+
+Every page on this site is searchable — press `/` or use the search box at the top.
+
+If you followed a link from somewhere on this site and landed here, that is a bug: please [open an issue](https://github.com/bamr87/csv-vscoode/issues/new).

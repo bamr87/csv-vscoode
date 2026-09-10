@@ -1,5 +1,21 @@
 # Changelog
 
+## Unreleased
+
+### Added
+
+- A documentation site at [apps.bash-365.com/csv-vscode](https://apps.bash-365.com/csv-vscode/), built with Astro and Starlight from `site/`. It carries the full guide set with search, a feature tour, a contributor section, and a live demo that runs the extension's own `src/core` parsing, type inference and statistics in the browser over sample or user-supplied files, including real SQLite via WebAssembly.
+- The site's guides are generated from `docs/`, `README.md`, `CHANGELOG.md` and `CONTRIBUTING.md`, and its command and pipeline references are generated from `package.json` and `schemas/csvpipe.schema.json`, so neither can drift from what the extension contributes.
+- A `docs` workflow that builds the site on every pull request, checks every internal link against the built output, and deploys to GitHub Pages from `main`.
+
+### Fixed
+
+- The Marketplace version and install badges in the README pointed at shields.io endpoints that have been retired and rendered as "retired badge".
+
+### Changed
+
+- `homepage` now points at the documentation site rather than at the README, so the Marketplace listing links there.
+
 ## 1.0.0
 
 First full release, upgrading the `bash-365.csv-grid-viewer` listing from the 0.0.1 preview. Existing installations receive this as an automatic update.
