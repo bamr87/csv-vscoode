@@ -1,6 +1,10 @@
 // @ts-check
+import { createRequire } from "node:module";
+
 import { defineConfig } from "astro/config";
 import starlight from "@astrojs/starlight";
+
+const require = createRequire(import.meta.url);
 
 /**
  * The site is published at https://apps.bash-365.com/csv-vscode.
@@ -21,6 +25,18 @@ export default defineConfig({
   site: SITE_URL,
   base: SITE_BASE,
   trailingSlash: "always",
+  vite: {
+    resolve: {
+      alias: {
+        // The live demo imports ../../../src/core, and src/core/parse.ts
+        // imports papaparse. Node would resolve that bare specifier from the
+        // repository root, which has no node_modules in CI — only site/ is
+        // installed there. Pin it to the site's own copy so the build does not
+        // depend on the extension having been installed first.
+        papaparse: require.resolve("papaparse"),
+      },
+    },
+  },
   integrations: [
     starlight({
       title: "CSV Grid Editor",
