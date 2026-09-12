@@ -71,7 +71,7 @@ Default `1000`. Rows shown in the pipeline preview grid. Does not affect what is
 
 | Setting | Why it matters |
 | --- | --- |
-| `workbench.editorAssociations` | Set `"*.csv": "default"` to make the text editor the default again |
+| `workbench.editorAssociations` | Set `"*.csv": "csv.gridEditor"` (and the same for `.tsv` / `.tab` / `.psv`) to open files in the grid by default; use `"default"` to keep the text editor |
 | `files.encoding` | The grid reads and writes with the encoding VS Code uses for the document |
 | `files.autoSave` | With `afterDelay`, grid edits save automatically, and `onSave` pipelines fire accordingly |
 | `editor.semanticHighlighting.enabled` | Required for rainbow columns; the extension enables it for `csv` and `tsv` by default |
@@ -87,7 +87,10 @@ Default `1000`. Rows shown in the pipeline preview grid. Does not affect what is
     "editor.semanticHighlighting.enabled": true
   },
   "workbench.editorAssociations": {
-    "*.log.csv": "default"
+    "*.csv": "csv.gridEditor",
+    "*.tsv": "csv.gridEditor",
+    "*.tab": "csv.gridEditor",
+    "*.psv": "csv.gridEditor"
   }
 }
 ```

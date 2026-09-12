@@ -14,6 +14,7 @@
 
 ### Changed
 
+- Custom editor `priority` is now `"option"` instead of `"default"`, so CSV/TSV files open in the text editor unless you choose **Open in Grid Editor** or set `workbench.editorAssociations` to `csv.gridEditor`. Getting started, README, settings and troubleshooting docs explain the opt-in path.
 - `homepage` now points at the documentation site rather than at the README, so the Marketplace listing links there.
 
 ## 1.0.0

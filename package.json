@@ -108,7 +108,7 @@
             "filenamePattern": "*.psv"
           }
         ],
-        "priority": "default"
+        "priority": "option"
       }
     ],
     "commands": [

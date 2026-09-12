@@ -6,7 +6,14 @@ From the VS Code Marketplace, search for **CSV Grid Editor** and select Install.
 
 ## Open a file
 
-Any `.csv`, `.tsv`, `.tab` or `.psv` file opens in the grid automatically. The extension registers itself as the default editor for those extensions.
+`.csv`, `.tsv`, `.tab` and `.psv` files open in the normal text editor by default. The grid is available as an optional custom editor so it does not replace text-first workflows.
+
+Open the grid any of these ways:
+
+- Click **Open in Grid Editor** in the editor title bar
+- Right-click the file in the Explorer and choose **Open in Grid Editor**
+- Run **CSV: Open in Grid Editor** from the Command Palette
+- Right-click the editor tab, choose **Open With…**, then **CSV Grid Editor**
 
 The grid reads the file, detects the delimiter, decides whether the first row is a header, and infers a type for each column. All three decisions are shown in the toolbar and all three can be overridden per file.
 
@@ -14,15 +21,27 @@ The grid reads the file, detects the delimiter, decides whether the first row is
 
 The grid is a custom editor over the same text document VS Code already has open. That means **Save**, **Undo**, **Redo**, the dirty indicator, file watching and source control all behave exactly as they do for a text file. Nothing is cached in a separate model that can drift out of sync.
 
-To switch to the plain text editor, use the **Open as text** button in the editor title bar, or run **CSV: Open as Text**. To come back, use **CSV: Open in Grid Editor**.
+To switch to the plain text editor from the grid, use the **Open as text** button in the editor title bar, or run **CSV: Open as Text**. To come back, use **CSV: Open in Grid Editor**.
 
 Text mode has its own features: each column gets a distinct colour, hovering a cell shows its column name and position, the status bar names the column under the cursor, and rows whose field count differs from the header are reported as warnings in the Problems panel.
 
-To make the text editor the default again for CSV files, add this to your settings:
+## Make the grid the default
+
+If you prefer every matching file to open in the grid, either:
+
+1. Use **Open With…** → **CSV Grid Editor**, then choose **Configure default editor for '*.csv'…** (and the same for `.tsv` / `.tab` / `.psv` if you want), or
+2. Add associations in your settings:
 
 ```json
-"workbench.editorAssociations": { "*.csv": "default" }
+"workbench.editorAssociations": {
+  "*.csv": "csv.gridEditor",
+  "*.tsv": "csv.gridEditor",
+  "*.tab": "csv.gridEditor",
+  "*.psv": "csv.gridEditor"
+}
 ```
+
+To undo that and return to the text editor as the default, remove those entries or set them to `"default"`.
 
 ## First steps
 
