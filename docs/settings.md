@@ -29,7 +29,7 @@ Default `auto`. One of `auto`, `,`, `\t`, `;` or `|`. With `auto`, the delimiter
 
 ### `csv.maxRows`
 
-Default `100000`. How many rows are loaded into the grid view. Larger files still edit, query and export in full; only the view, find and statistics are limited. Raising this costs memory and initial render time.
+Default `100000`. How many rows are loaded into the grid view. SQL still queries the whole file. Cell edits, find and statistics apply to the loaded rows. Whole-table rewrites run on the host against the full file. Raising this costs memory and initial render time.
 
 ### `csv.sqlResultLimit`
 

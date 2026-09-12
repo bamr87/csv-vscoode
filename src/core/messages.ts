@@ -1,4 +1,5 @@
 import type { EditOp } from "./edits";
+import type { HostTransform } from "./hostTransform";
 import type { ExportFormat } from "./export";
 import type { Pipeline, StepReport } from "./pipeline";
 import type { ColumnType, CsvTable } from "./types";
@@ -80,7 +81,8 @@ export type WebviewMessage =
   | { type: "pipelineOpenFile"; path?: string }
   | { type: "pipelineRun"; pipeline: Pipeline; mode: "preview" | "apply" | "output" | "export"; format?: ExportFormat; requestId: number }
   | { type: "info"; message: string }
-  | { type: "error"; message: string };
+  | { type: "error"; message: string }
+  | { type: "hostTransform"; transform: HostTransform };
 
 export function payloadToTable(payload: TablePayload): CsvTable {
   return {
