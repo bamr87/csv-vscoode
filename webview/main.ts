@@ -4,7 +4,7 @@ import "./styles.css";
 import type { EditOp } from "../src/core/edits";
 import { EXPORT_FORMATS, exportTable, toJson, toMarkdown, type ExportFormat } from "../src/core/export";
 import { payloadToTable, type HostMessage, type PanelId, type TablePayload, type WebviewSettings } from "../src/core/messages";
-import { applyPureStep, type PipelineStep } from "../src/core/pipeline";
+import type { PipelineStep } from "../src/core/pipeline";
 import { formatNumber, summarizeValues } from "../src/core/stats";
 import {
   duplicateColumnOps,
@@ -14,10 +14,8 @@ import {
   fillRightOps,
   fillSeriesOps,
   mergeColumnsOps,
-  normalizeRows,
   raggedRowIndices,
-  splitColumnOps,
-  transposeTable
+  splitColumnOps
 } from "../src/core/transform";
 import type { ColumnType, CsvTable } from "../src/core/types";
 import { columnCount, columnName } from "../src/core/types";
@@ -359,8 +357,9 @@ class App {
       this.banner.hidden = false;
       this.banner.textContent =
         `Showing the first ${this.loadedRows.toLocaleString()} of ${this.totalRows.toLocaleString()} rows ` +
-        `(csv.maxRows = ${this.settings.maxRows.toLocaleString()}). Editing, SQL and export still cover the whole file; ` +
-        `find and statistics cover the loaded rows.`;
+        `(csv.maxRows = ${this.settings.maxRows.toLocaleString()}). SQL still covers the whole file. ` +
+        `Cell edits, find and statistics apply to the loaded rows. Whole-table rewrites ` +
+        `(trim, case, fill empty, transpose, normalize) run on the host against the full file.`;
     } else {
       this.banner.hidden = true;
     }
@@ -403,15 +402,12 @@ class App {
     this.updateStatus();
   }
 
-  /** Run a no-code pipeline step over the whole table and write the result back. */
+  /**
+   * Run a no-code pipeline step on the host's full document model.
+   * Never compute replaceAll from the (possibly truncated) webview rows.
+   */
   private async applyStep(step: PipelineStep): Promise<void> {
-    const before = this.model();
-    try {
-      const after = applyPureStep(before, step);
-      await this.applyLocal([{ kind: "replaceAll", headers: after.hasHeader ? after.headers : before.headers, rows: after.rows }], true);
-    } catch (error) {
-      post({ type: "error", message: error instanceof Error ? error.message : String(error) });
-    }
+    post({ type: "hostTransform", transform: { kind: "pipelineStep", step } });
   }
 
   // --- Actions ------------------------------------------------------------
@@ -633,11 +629,13 @@ class App {
         this.grid?.clearFilters();
         this.updateStatus();
         break;
-      case "transpose":
-        if (await confirmDialog(`Transpose the whole table (${model.rows.length.toLocaleString()} rows × ${columnCount(model)} columns)?`)) {
-          await this.applyLocal([transposeTable(model)], true);
+      case "transpose": {
+        const rowsLabel = this.payload?.truncated ? this.totalRows : model.rows.length;
+        if (await confirmDialog(`Transpose the whole table (${rowsLabel.toLocaleString()} rows × ${columnCount(model)} columns)?`)) {
+          post({ type: "hostTransform", transform: { kind: "transpose" } });
         }
         break;
+      }
       case "trim":
       case "upper":
       case "lower":
@@ -675,11 +673,20 @@ class App {
         break;
       }
       case "normalizeRows": {
+        // Ragged detection on a truncated view can miss unloaded rows; the host
+        // re-checks and rewrites the full document.
         const { indices, expected } = raggedRowIndices(model);
-        if (indices.length === 0) {
+        if (indices.length === 0 && !this.payload?.truncated) {
           post({ type: "info", message: "Every row already has the same number of fields." });
-        } else if (await confirmDialog(`Pad or trim ${indices.length.toLocaleString()} rows to ${expected} fields? Non-empty extra cells are kept.`)) {
-          await this.applyLocal([normalizeRows(model, expected)], true);
+          break;
+        }
+        const message = this.payload?.truncated && indices.length === 0
+          ? `Normalize every row in the full file to ${expected} fields? The loaded prefix looks even; unloaded rows may still be ragged.`
+          : this.payload?.truncated
+            ? `Pad or trim at least ${indices.length.toLocaleString()} loaded rows to ${expected} fields (host will normalize the whole file)? Non-empty extra cells are kept.`
+            : `Pad or trim ${indices.length.toLocaleString()} rows to ${expected} fields? Non-empty extra cells are kept.`;
+        if (await confirmDialog(message)) {
+          post({ type: "hostTransform", transform: { kind: "normalizeRows", width: expected } });
         }
         break;
       }

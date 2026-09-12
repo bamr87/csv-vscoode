@@ -1,6 +1,7 @@
 import * as vscode from "vscode";
 import { inferColumnTypes } from "./core/infer";
 import type { HostMessage, PanelId, TablePayload, WebviewMessage } from "./core/messages";
+import { applyHostTransform, rejectReplaceAllWhileTruncated } from "./core/hostTransform";
 import type { CsvTable } from "./core/types";
 import { CsvDocumentModel } from "./documentModel";
 import { exportToNewDocument, openTableAsCsv } from "./exportCommands";
@@ -201,9 +202,30 @@ export class CsvEditorProvider implements vscode.CustomTextEditorProvider {
         session.sendTable();
         break;
       case "edit": {
+        const settings = getSettings(session.document);
+        const rejection = rejectReplaceAllWhileTruncated(message.ops, model.getTable().rows.length, settings.maxRows);
+        if (rejection) {
+          vscode.window.showErrorMessage(rejection);
+          session.sendTable();
+          break;
+        }
         const ok = await model.applyEdits(message.ops);
         if (!ok) {
           vscode.window.showErrorMessage("CSV: the document could not be modified (is it read-only?).");
+          session.sendTable();
+        }
+        break;
+      }
+      case "hostTransform": {
+        try {
+          const next = applyHostTransform(model.getTable(), message.transform);
+          const ok = await model.writeTable(next);
+          if (!ok) {
+            vscode.window.showErrorMessage("CSV: the document could not be modified (is it read-only?).");
+          }
+          session.sendTable();
+        } catch (error) {
+          vscode.window.showErrorMessage(`CSV: ${error instanceof Error ? error.message : String(error)}`);
           session.sendTable();
         }
         break;

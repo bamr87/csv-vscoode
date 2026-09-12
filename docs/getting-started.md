@@ -36,7 +36,7 @@ To make the text editor the default again for CSV files, add this to your settin
 
 The grid renders rows virtually, so scrolling stays smooth on large files. By default the first 100,000 rows are loaded into the view; the setting is `csv.maxRows`.
 
-When a file is larger than that, a banner tells you so. Editing, SQL and export still operate on the whole file. Find and statistics operate on the loaded rows.
+When a file is larger than that, a banner tells you so. SQL still operates on the whole file. Cell edits, find and statistics operate on the loaded rows. Whole-table rewrites (trim, change case, fill empty, transpose, normalize rows) run on the host against the full file so unloaded rows are not dropped.
 
 ## Where to next
 

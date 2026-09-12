@@ -1,0 +1,18 @@
+(!) Your Vite config uses features that are unsupported by `configLoader: 'native'`, which is planned to become the default in a future major version of Vite:
+  - ESM syntax in a file loaded as CommonJS (vitest.config.ts:1:1). Use a `.mjs` extension or set `"type": "module"` in the closest package.json
+Set `VITE_CONFIG_NATIVE_IGNORE_WARNING=true` to suppress this warning.
+
+ RUN  v4.1.11 /workspace/csv-vscoode-pr28
+
+ ✓ test/hostTransform.test.ts > truncation + replaceAll data loss (#27) > documents the failure mode: trim via truncated replaceAll drops the file tail 6ms
+ ✓ test/hostTransform.test.ts > truncation + replaceAll data loss (#27) > host-authoritative trim preserves unloaded rows and trims them too 1ms
+ ✓ test/hostTransform.test.ts > truncation + replaceAll data loss (#27) > host-authoritative transpose uses every row, not just the loaded prefix 1ms
+ ✓ test/hostTransform.test.ts > truncation + replaceAll data loss (#27) > host-authoritative normalizeRows pads ragged rows across the full file 1ms
+ ✓ test/hostTransform.test.ts > truncation + replaceAll data loss (#27) > rejects webview replaceAll edits while the view is truncated 0ms
+ ✓ test/hostTransform.test.ts > truncation + replaceAll data loss (#27) > cell edits on loaded rows still apply without touching the unloaded tail 1ms
+
+ Test Files  1 passed (1)
+      Tests  6 passed (6)
+   Start at  04:04:30
+   Duration  339ms (transform 107ms, setup 0ms, import 139ms, tests 12ms, environment 0ms)
+

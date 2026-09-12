@@ -1,0 +1,28 @@
+=== PR #28 evidence: truncation + replaceAll (maxRows=3, 5-row CSV) ===
+
+INPUT (5 rows):
+  [0] ["  a  ","keep"]
+  [1] ["  b  ","keep"]
+  [2] ["c","keep"]
+  [3] ["d","tail"]
+  [4] ["e","tail"]
+
+BEFORE FIX — webview trim on loaded prefix, then replaceAll onto host:
+  row count: 3  (expected 5)  ← DATA LOSS, dropped d & e
+  [0] ["a","keep"]
+  [1] ["b","keep"]
+  [2] ["c","keep"]
+
+AFTER FIX — host-authoritative transform on full table:
+  row count: 5  (expected 5)  ← PRESERVED
+  [0] ["a","keep"]
+  [1] ["b","keep"]
+  [2] ["c","keep"]
+  [3] ["d","tail"]
+  [4] ["e","tail"]
+
+GUARD (truncated replaceAll rejected):
+  CSV: refusing to replace the whole table while the grid is truncated. Raise csv.maxRows, or use a host-side transform / pipeline so unloaded rows are not dropped.
+
+Automated: vitest test/hostTransform.test.ts → 6/6 passed
+(Reproduced via applyTruncatedReplaceAllBug vs applyHostTransform in src/core/hostTransform.ts)
