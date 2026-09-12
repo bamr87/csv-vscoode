@@ -1,0 +1,16 @@
+PR #29 evidence — custom editor priority
+
+BEFORE (main / 1.0.0):
+  package.json → contributes.customEditors[0].priority = "default"
+  Opening any *.csv|*.tsv|*.tab|*.psv forces csv.gridEditor.
+
+AFTER (this PR):
+  package.json → contributes.customEditors[0].priority = "option"
+  Files open in the text editor; grid via "CSV: Open in Grid Editor" / Open With.
+  Opt-in default documented:
+    "workbench.editorAssociations": { "*.csv": "csv.gridEditor" }
+
+Verification:
+  gh api .../package.json?ref=main → priority default
+  gh api .../package.json?ref=fix/custom-editor-priority-option → priority option
+  npm test → 93 passed; typecheck clean
