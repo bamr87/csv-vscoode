@@ -10,10 +10,11 @@
 
 ### Fixed
 
-- The Marketplace version and install badges in the README pointed at shields.io endpoints that have been retired and rendered as "retired badge".
+- The Marketplace version and install badges used shields.io `visual-studio-marketplace` routes, which now render as "retired badge". They now use [badgen.net](https://badgen.net), an approved Marketplace badge host.
 
 ### Changed
 
+- Documentation screenshots and the demo GIF now show the grid inside the VS Code workbench, with the CSV sidebar (Settings, Pipelines, Files) visible rather than a cropped webview.
 - Custom editor `priority` is now `"option"` instead of `"default"`, so CSV/TSV files open in the text editor unless you choose **Open in Grid Editor** or set `workbench.editorAssociations` to `csv.gridEditor`. Getting started, README, settings and troubleshooting docs explain the opt-in path.
 - `homepage` now points at the documentation site rather than at the README, so the Marketplace listing links there.
 
