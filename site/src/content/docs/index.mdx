@@ -123,7 +123,7 @@ This extension puts the grid **inside VS Code, on top of the file itself**. The 
      </TabItem>
    </Tabs>
 
-2. **Open any delimited file.** That is the whole setup — the extension registers itself as the default editor for `.csv`, `.tsv`, `.tab` and `.psv`.
+2. **Open any delimited file**, then choose **Open in Grid Editor** from the title bar, Explorer menu, or Command Palette. CSV/TSV open as text by default so the grid does not hijack them.
 
 3. **Select a range of numbers.** The status bar shows count, sum, average, minimum and maximum, exactly like the spreadsheet you came from.
 
@@ -133,8 +133,8 @@ This extension puts the grid **inside VS Code, on top of the file itself**. The 
 
 </Steps>
 
-<Aside type="tip" title="Prefer the text editor for one file?">
-  Use **Open as text** in the editor title bar. To make plain text the default for every CSV, add `"workbench.editorAssociations": { "*.csv": "default" }` to your settings.
+<Aside type="tip" title="Want the grid every time?">
+  Use **Open With…** → **CSV Grid Editor** → **Configure default editor…**, or set `"workbench.editorAssociations": { "*.csv": "csv.gridEditor" }` (and the same for `.tsv` / `.tab` / `.psv`) in your settings.
 </Aside>
 
 ## For collaborators and contributors

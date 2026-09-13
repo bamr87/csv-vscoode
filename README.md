@@ -106,13 +106,20 @@ Open any CSV as text and each column gets its own colour, hovering a cell names 
 
 ## Getting started
 
-Install from the Marketplace, then open any `.csv`, `.tsv`, `.tab` or `.psv` file. That is the whole setup.
+Install from the Marketplace, then open any `.csv`, `.tsv`, `.tab` or `.psv` file in the text editor as usual. Open the grid with **Open in Grid Editor** in the editor title bar, from the Explorer context menu, or via **CSV: Open in Grid Editor**.
 
-To go back to the plain text editor for one file, use **Open as text** in the editor title bar. To change the default for all CSV files:
+To make the grid the default for those extensions:
 
 ```json
-"workbench.editorAssociations": { "*.csv": "default" }
+"workbench.editorAssociations": {
+  "*.csv": "csv.gridEditor",
+  "*.tsv": "csv.gridEditor",
+  "*.tab": "csv.gridEditor",
+  "*.psv": "csv.gridEditor"
+}
 ```
+
+You can also use **Open With…** → **CSV Grid Editor** → **Configure default editor…**. Details: [Getting started](docs/getting-started.md).
 
 ## Documentation
 
