@@ -6,9 +6,9 @@
 # change to docs/, README.md, CHANGELOG.md, CONTRIBUTING.md, package.json or
 # schemas/ triggers a rebuild as well as a change to site/ itself.
 #
-# Node 22 here, not the Node 20 the extension builds on: Astro 7 requires it.
-# The two toolchains are independent — the site has its own package.json and
-# lockfile, and nothing it installs reaches the VSIX.
+# Node 22, which Astro 7 requires (22.12 or newer). The extension's CI uses
+# Node 22 as well, but the two toolchains stay independent — the site has its
+# own package.json and lockfile, and nothing it installs reaches the VSIX.
 #
 # The URL's path segment is produced by laying the build out under a
 # csv-vscode/ directory in the artifact, not by GitHub. A custom domain on a

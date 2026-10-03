@@ -21,7 +21,7 @@ tsconfig.json
 webview/tsconfig.json
 esbuild.mjs
 eslint.config.mjs
-vitest.config.ts
+vitest.config.mts
 .editorconfig
 .gitignore
 package-lock.json

@@ -699,20 +699,20 @@
     "chart.js": "^4.5.1",
     "papaparse": "^5.7.0",
     "sql.js": "^1.14.2",
-    "tabulator-tables": "^6.5.2"
+    "tabulator-tables": "^6.6.1"
   },
   "devDependencies": {
     "@eslint/js": "^10.0.1",
-    "@types/node": "^20.19.43",
+    "@types/node": "^22.20.5",
     "@types/papaparse": "^5.5.2",
     "@types/sql.js": "^1.4.11",
     "@types/tabulator-tables": "^6.3.6",
     "@types/vscode": "^1.90.0",
-    "@vscode/vsce": "^3.9.2",
+    "@vscode/vsce": "^4.0.0",
     "esbuild": "^0.28.2",
-    "eslint": "^10.10.0",
-    "typescript": "^5.9.3",
-    "typescript-eslint": "^8.70.0",
-    "vitest": "^4.1.11"
+    "eslint": "^10.12.0",
+    "typescript": "^6.0.3",
+    "typescript-eslint": "^8.71.0",
+    "vitest": "^5.0.3"
   }
 }

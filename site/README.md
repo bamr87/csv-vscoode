@@ -16,7 +16,7 @@ npm run check      # astro check (types and content schemas)
 npm run check:links  # dead internal links in dist/
 ```
 
-Node 22.12 or newer, because Astro 7 requires it. The extension itself still builds and tests on Node 20 — the two toolchains are deliberately separate, with their own `package.json` and lockfile, and nothing here reaches the VSIX (`.vscodeignore` excludes `site/**`).
+Node 22.12 or newer, because Astro 7 requires it. The extension's CI also uses Node 22, but the two toolchains are deliberately separate, with their own `package.json` and lockfile, and nothing here reaches the VSIX (`.vscodeignore` excludes `site/**`).
 
 ## Most pages are generated
 
