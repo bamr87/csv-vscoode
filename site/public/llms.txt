@@ -1,0 +1,19 @@
+# CSV Grid Editor
+
+> A VS Code extension (Marketplace id `bash-365.csv-grid-viewer`) that opens CSV, TSV, TAB and PSV files in a spreadsheet-style grid on top of the text document. It has editing with native undo and save, Excel-style AutoFilter, column statistics, charts, in-memory SQLite queries, and re-runnable data pipelines. Everything runs locally. CSV and TSV files open as text by default; the grid is opt-in via "Open in Grid Editor".
+
+## Docs
+
+- [Getting started](https://apps.bash-365.com/csv-vscode/guides/getting-started/): install and first use
+- [Feature tour](https://apps.bash-365.com/csv-vscode/features/)
+- [Pipelines](https://apps.bash-365.com/csv-vscode/guides/pipelines/): repeatable cleanup steps
+- [Commands](https://apps.bash-365.com/csv-vscode/reference/commands/)
+- [Settings](https://apps.bash-365.com/csv-vscode/reference/settings/)
+- [Pipeline schema](https://apps.bash-365.com/csv-vscode/reference/pipeline-schema/)
+- [Troubleshooting](https://apps.bash-365.com/csv-vscode/reference/troubleshooting/)
+
+## Links
+
+- [Source](https://github.com/bamr87/csv-vscoode)
+- [VS Code Marketplace](https://marketplace.visualstudio.com/items?itemName=bash-365.csv-grid-viewer)
+- [Open VSX](https://open-vsx.org/extension/bash-365/csv-grid-viewer)

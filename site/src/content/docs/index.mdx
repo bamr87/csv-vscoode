@@ -1,9 +1,12 @@
 ---
-title: CSV Grid Editor
+# The head <title> is "<page title> | <site title>", so this must not repeat
+# the site title. The visible hero heading is set by hero.title below.
+title: Spreadsheet grid for CSV and TSV files in VS Code
 description: A spreadsheet-style grid for CSV and TSV files inside VS Code. Edit cells with real undo and save, filter the way Excel does, query with SQL, chart a column, and turn repeated cleanup into re-runnable pipelines.
 template: splash
 editUrl: https://github.com/bamr87/csv-vscoode/edit/main/site/src/content/docs/index.mdx
 hero:
+  title: CSV Grid Editor
   image:
     alt: A CSV file open in the grid editor inside VS Code
     file: ../../assets/hero-grid.png
@@ -42,8 +45,8 @@ CSV is the format everyone actually exchanges, and reading one in a text editor 
 This extension puts the grid **inside VS Code, on top of the file itself**. The text document stays the source of truth, so `Ctrl+S`, `Ctrl+Z`, the dirty indicator, file watching and Git all behave exactly as they do for any other file. Nothing is cached in a parallel model that can drift, and nothing reformats your data behind your back.
 
 <CardGrid>
-  <Card title="Nothing to configure" icon="approve-check">
-    Install it and open a `.csv`, `.tsv`, `.tab` or `.psv` file. The delimiter, the header row and every column type are detected, and all three can be overridden per file.
+  <Card title="Opt in, then nothing to configure" icon="approve-check">
+    CSV and TSV files still open as text, so the grid never takes over a file you did not ask it to. Choose **Open in Grid Editor** from the title bar, Explorer menu or Command Palette on any `.csv`, `.tsv`, `.tab` or `.psv` file. The delimiter, the header row and every column type are detected, and all three can be overridden per file.
   </Card>
   <Card title="Nothing to upload" icon="padlock">
     Every feature — parsing, statistics, charts, SQL, pipelines — runs locally inside VS Code. No service sees your data, and the extension works offline.

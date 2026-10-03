@@ -65,6 +65,16 @@ export default defineConfig({
           tag: "meta",
           attrs: { property: "og:image", content: `${SITE_URL}${SITE_BASE}/og.png` },
         },
+        // site/public/og.png is 1200x630, the size Open Graph and X cards expect.
+        { tag: "meta", attrs: { property: "og:image:width", content: "1200" } },
+        { tag: "meta", attrs: { property: "og:image:height", content: "630" } },
+        {
+          tag: "meta",
+          attrs: {
+            property: "og:image:alt",
+            content: "CSV Grid Editor: a spreadsheet-style grid for CSV and TSV files inside VS Code",
+          },
+        },
         {
           tag: "meta",
           attrs: { name: "twitter:card", content: "summary_large_image" },
