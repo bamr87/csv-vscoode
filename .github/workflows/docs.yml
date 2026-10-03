@@ -102,6 +102,28 @@ jobs:
           <p>Redirecting to <a href="${SITE_BASE}/">the CSV Grid Editor documentation</a>.</p>
           HTML
 
+          # The repository is named csv-vscoode, so people guess that path.
+          # Send them to the real one instead of a 404.
+          mkdir -p _site/csv-vscoode
+          cat > _site/csv-vscoode/index.html <<HTML
+          <!doctype html>
+          <meta charset="utf-8">
+          <title>CSV Grid Editor</title>
+          <meta name="robots" content="noindex">
+          <meta http-equiv="refresh" content="0; url=${SITE_BASE}/">
+          <link rel="canonical" href="${SITE_URL}${SITE_BASE}/">
+          <p>Moved to <a href="${SITE_BASE}/">${SITE_URL}${SITE_BASE}/</a>.</p>
+          HTML
+
+          # Crawlers only read robots.txt from the domain root, so it is
+          # written here rather than shipped in site/public/.
+          cat > _site/robots.txt <<TXT
+          User-agent: *
+          Allow: /
+
+          Sitemap: ${SITE_URL}${SITE_BASE}/sitemap-index.xml
+          TXT
+
           # Pages needs the custom domain in the artifact; the repository
           # setting alone is not enough once a workflow publishes the site.
           printf '%s\n' "${CUSTOM_DOMAIN}" > _site/CNAME
