@@ -707,7 +707,7 @@
     "@types/papaparse": "^5.5.2",
     "@types/sql.js": "^1.4.11",
     "@types/tabulator-tables": "^6.3.6",
-    "@types/vscode": "^1.90.0",
+    "@types/vscode": "1.90.0",
     "@vscode/vsce": "^4.0.0",
     "esbuild": "^0.28.2",
     "eslint": "^10.12.0",
