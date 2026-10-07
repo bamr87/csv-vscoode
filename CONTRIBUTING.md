@@ -88,4 +88,4 @@ There is no automated UI test for the webview. Changes to the grid are verified 
 
 Four runtime dependencies, each carrying real weight: PapaParse for parsing, Tabulator for the grid, sql.js for SQL, and Chart.js for charts. The host bundle excludes sql.js so the WebAssembly loader can find its `.wasm` next to it in `out/sqljs`.
 
-CI runs on Node 20, so development dependencies must stay compatible with it. That is why Vitest is pinned to the 4.x line.
+CI and the release workflow run on Node 22, which Vitest 5 and `@vscode/vsce` 4 require. The extension itself still runs on whatever Node the VS Code extension host provides, which is Node 20 for the oldest supported VS Code (`engines.vscode` is `^1.90.0`). That is why `esbuild.mjs` targets `node20`, why `@types/vscode` stays at `1.90.0`, and why code under `src/` must not use APIs newer than Node 20. TypeScript stays on the 6.x line because typescript-eslint and `@astrojs/check` do not support TypeScript 7 yet.

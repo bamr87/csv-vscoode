@@ -34,7 +34,8 @@ jobs:
 
       - uses: actions/setup-node@v7
         with:
-          node-version: ${{ vars.NODE_VERSION || '20' }}
+          # Same Node as ci.yml: Vitest 5 and @vscode/vsce 4 require Node 22.
+          node-version: "22"
           cache: npm
 
       - name: Install

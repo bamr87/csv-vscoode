@@ -16,13 +16,13 @@
     "check:links": "node scripts/check-links.mjs dist"
   },
   "dependencies": {
-    "@astrojs/starlight": "^0.42.0",
-    "astro": "^7.3.2",
+    "@astrojs/starlight": "^0.42.5",
+    "astro": "^7.3.5",
     "chart.js": "^4.5.1",
     "papaparse": "^5.7.0",
-    "sharp": "^0.35.4",
+    "sharp": "^0.35.5",
     "sql.js": "^1.14.2",
-    "tabulator-tables": "^6.5.2"
+    "tabulator-tables": "^6.6.1"
   },
   "devDependencies": {
     "@astrojs/check": "^0.9.10",

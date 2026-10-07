@@ -17,6 +17,7 @@
 - Documentation screenshots and the demo GIF now show the grid inside the VS Code workbench, with the CSV sidebar (Settings, Pipelines, Files) visible rather than a cropped webview.
 - Custom editor `priority` is now `"option"` instead of `"default"`, so CSV/TSV files open in the text editor unless you choose **Open in Grid Editor** or set `workbench.editorAssociations` to `csv.gridEditor`. Getting started, README, settings and troubleshooting docs explain the opt-in path.
 - `homepage` now points at the documentation site rather than at the README, so the Marketplace listing links there.
+- All dependencies updated to their latest releases, including Vitest 5, `@vscode/vsce` 4 and TypeScript 6 for the extension, and Astro 7.3.5 and Starlight 0.42.5 for the site. CI and the release workflow now run on Node 22, which Vitest 5 and vsce 4 require; Node 20 is end-of-life. TypeScript stays on the 6.x line because typescript-eslint and `@astrojs/check` do not support 7.0 yet, and `@types/vscode` stays matched to `engines.vscode` (`^1.90.0`).
 
 ## 1.0.0
 
