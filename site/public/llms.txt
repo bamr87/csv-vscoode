@@ -14,6 +14,6 @@
 
 ## Links
 
-- [Source](https://github.com/bamr87/csv-vscoode)
+- [Source](https://github.com/bash-365/csv-vscoode)
 - [VS Code Marketplace](https://marketplace.visualstudio.com/items?itemName=bash-365.csv-grid-viewer)
 - [Open VSX](https://open-vsx.org/extension/bash-365/csv-grid-viewer)

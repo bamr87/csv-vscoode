@@ -3,7 +3,7 @@
 ## Setup
 
 ```bash
-git clone https://github.com/bamr87/csv-vscoode.git
+git clone https://github.com/bash-365/csv-vscoode.git
 cd csv-vscoode
 npm install
 npm run compile

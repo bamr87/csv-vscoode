@@ -1,14 +1,14 @@
 ---
 title: The documentation site
 description: How this site is built, where each page comes from, how to run it locally, and how it is deployed to apps.bash-365.com/csv-vscode.
-editUrl: https://github.com/bamr87/csv-vscoode/edit/main/site/src/content/docs/contribute/documentation.mdx
+editUrl: https://github.com/bash-365/csv-vscoode/edit/main/site/src/content/docs/contribute/documentation.mdx
 sidebar:
   order: 2
 ---
 
 import { Aside, FileTree, Steps } from "@astrojs/starlight/components";
 
-This site lives in [`site/`](https://github.com/bamr87/csv-vscoode/tree/main/site) in the extension's own repository. It is [Astro](https://astro.build/) with [Starlight](https://starlight.astro.build/), a static build with no server and no database, published to GitHub Pages at `apps.bash-365.com/csv-vscode`.
+This site lives in [`site/`](https://github.com/bash-365/csv-vscoode/tree/main/site) in the extension's own repository. It is [Astro](https://astro.build/) with [Starlight](https://starlight.astro.build/), a static build with no server and no database, published to GitHub Pages at `apps.bash-365.com/csv-vscode`.
 
 ## Run it locally
 
@@ -106,6 +106,6 @@ If you add a capability to the core, consider surfacing it in the demo. It is th
 
 ## Deployment
 
-A push to `main` that touches `site/`, `docs/`, `README.md`, `CHANGELOG.md`, `CONTRIBUTING.md`, `package.json` or `schemas/` runs [`.github/workflows/docs.yml`](https://github.com/bamr87/csv-vscoode/blob/main/.github/workflows/docs.yml), which builds the site and deploys it to GitHub Pages. Pull requests build the site too, but do not deploy — so a broken link or a failed build is caught before it merges.
+A push to `main` that touches `site/`, `docs/`, `README.md`, `CHANGELOG.md`, `CONTRIBUTING.md`, `package.json` or `schemas/` runs [`.github/workflows/docs.yml`](https://github.com/bash-365/csv-vscoode/blob/main/.github/workflows/docs.yml), which builds the site and deploys it to GitHub Pages. Pull requests build the site too, but do not deploy — so a broken link or a failed build is caught before it merges.
 
 The deployment lays the built site out under a `csv-vscode/` directory and adds a root redirect, which is what produces the `apps.bash-365.com/csv-vscode` URL. Both halves are configurable: `SITE_URL` and `SITE_BASE` in the workflow environment change where the site thinks it lives, without touching a single page.

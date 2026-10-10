@@ -23,7 +23,7 @@ const PUBLIC = path.join(SITE, "public");
 
 /** Base path the site is served from; links to public assets need the prefix. */
 const BASE = (process.env.SITE_BASE ?? "/csv-vscode").replace(/\/+$/, "");
-const REPO = "https://github.com/bamr87/csv-vscoode";
+const REPO = "https://github.com/bash-365/csv-vscoode";
 
 /**
  * source: path relative to the repository root.
@@ -289,7 +289,7 @@ function pipelineSchemaPage(schema) {
     "",
     "```json",
     "{",
-    '  "$schema": "https://raw.githubusercontent.com/bamr87/csv-vscoode/main/schemas/csvpipe.schema.json",',
+    '  "$schema": "https://raw.githubusercontent.com/bash-365/csv-vscoode/main/schemas/csvpipe.schema.json",',
     '  "name": "Clean sales export",',
     '  "steps": [{ "kind": "trim" }]',
     "}",
