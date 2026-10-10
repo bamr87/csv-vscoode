@@ -66,4 +66,4 @@ If the file uses an encoding VS Code did not detect, the text document itself wi
 
 ## Reporting a bug
 
-Open an issue at https://github.com/bamr87/csv-vscoode/issues with the extension version, your VS Code version and platform, what you expected, and a small file that reproduces the problem. Output from the **CSV Pipelines** channel helps for pipeline issues.
+Open an issue at https://github.com/bash-365/csv-vscoode/issues with the extension version, your VS Code version and platform, what you expected, and a small file that reproduces the problem. Output from the **CSV Pipelines** channel helps for pipeline issues.

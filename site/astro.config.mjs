@@ -17,7 +17,7 @@ const require = createRequire(import.meta.url);
 const SITE_URL = process.env.SITE_URL ?? "https://apps.bash-365.com";
 const SITE_BASE = process.env.SITE_BASE ?? "/csv-vscode";
 
-const REPO = "https://github.com/bamr87/csv-vscoode";
+const REPO = "https://github.com/bash-365/csv-vscoode";
 const MARKETPLACE =
   "https://marketplace.visualstudio.com/items?itemName=bash-365.csv-grid-viewer";
 

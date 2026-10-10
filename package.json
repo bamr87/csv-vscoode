@@ -14,11 +14,11 @@
   "qna": "marketplace",
   "repository": {
     "type": "git",
-    "url": "https://github.com/bamr87/csv-vscoode.git"
+    "url": "https://github.com/bash-365/csv-vscoode.git"
   },
   "homepage": "https://apps.bash-365.com/csv-vscode/",
   "bugs": {
-    "url": "https://github.com/bamr87/csv-vscoode/issues"
+    "url": "https://github.com/bash-365/csv-vscoode/issues"
   },
   "keywords": [
     "csv",
@@ -662,7 +662,7 @@
     "viewsWelcome": [
       {
         "view": "csv.pipelinesView",
-        "contents": "No pipelines in this workspace.\n\nA pipeline is a reusable set of steps that cleans or reshapes a CSV, saved as a .csvpipe.json file.\n\n[Create a pipeline](command:csv.newPipeline)\n\n[Read the guide](https://github.com/bamr87/csv-vscoode/blob/main/docs/pipelines.md)"
+        "contents": "No pipelines in this workspace.\n\nA pipeline is a reusable set of steps that cleans or reshapes a CSV, saved as a .csvpipe.json file.\n\n[Create a pipeline](command:csv.newPipeline)\n\n[Read the guide](https://github.com/bash-365/csv-vscoode/blob/main/docs/pipelines.md)"
       },
       {
         "view": "csv.filesView",
